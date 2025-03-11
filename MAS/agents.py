@@ -17,7 +17,7 @@ class GreenRobot(mesa.Agent):
             model: A RobotMission instance
         """
         super().__init__(model)
-        self.knwoledge = {
+        self.knowledge = {
             "actions" : [],
             "percept" : [],
             "grid_width" : self.model.width,
@@ -32,7 +32,7 @@ class GreenRobot(mesa.Agent):
     def deliberate(self):
         # Based on the current knowledge, choose an action to perform
         possible_steps = self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False
+            self.pos, moore=False, include_center=False
         )
         new_position = self.random.choice(possible_steps)
         self.model.grid.move_agent(self, new_position)
@@ -52,7 +52,7 @@ class YellowRobot(mesa.Agent):
             model: A RobotMission instance
         """
         super().__init__(model)
-        self.knwoledge = {
+        self.knowledge = {
             "actions" : [],
             "percept" : [],
             "grid_width" : self.model.width,
@@ -67,7 +67,7 @@ class YellowRobot(mesa.Agent):
     def deliberate(self):
         # Based on the current knowledge, choose an action to perform
         possible_steps = self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False
+            self.pos, moore=False, include_center=False
         )
         new_position = self.random.choice(possible_steps)
         self.model.grid.move_agent(self, new_position)
@@ -87,7 +87,7 @@ class RedRobot(mesa.Agent):
             model: A RobotMission instance
         """
         super().__init__(model)
-        self.knwoledge = {
+        self.knowledge = {
             "actions" : [],
             "percept" : [],
             "grid_width" : self.model.width,
@@ -102,7 +102,7 @@ class RedRobot(mesa.Agent):
     def deliberate(self):
         # Based on the current knowledge, choose an action to perform
         possible_steps = self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False
+            self.pos, moore=False, include_center=False
         )
         new_position = self.random.choice(possible_steps)
         self.model.grid.move_agent(self, new_position)

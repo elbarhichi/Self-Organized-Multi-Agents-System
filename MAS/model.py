@@ -25,27 +25,16 @@ class RobotMission(mesa.Model):
         self.height = height
         self.max_steps = max_steps
         self.grid = mesa.space.MultiGrid(width, height, torus=False)
-        self.zones = {
-            'green' : 
-                {
-                    'bounds' : [(0, width // 3), (0, height)],
-                    'agents' : []
-                },
-            'yellow' : 
-                {
-                    'bounds' : [(width // 3 + 1, 2 * width // 3), (0, height)],
-                    'agents' : []
-                },
-            'red' : 
-                {
-                    'bounds' : [(2 * width // 3 + 1, width), (0, height)],
-                    'agents' : []
-                }
+        self.robot_agents = []
+        self.zone_bounds = {
+            'green' : [(0, width // 3), (0, height)],
+            'yellow' : [(width // 3 + 1, 2 * width // 3), (0, height)],
+            'red' : [(2 * width // 3 + 1, width), (0, height)]
             }
 
         # Initialize each zone
-        for zone in self.zones:
-            bounds = self.zones[zone]['bounds']
+        for zone in self.zone_bounds:
+            bounds = self.zone_bounds[zone]
             x_min, x_max = bounds[0]
             y_min, y_max = bounds[1]
         
@@ -56,7 +45,7 @@ class RobotMission(mesa.Model):
                 agents = YellowRobot.create_agents(model=self, n=n)
             elif zone == 'red':
                 agents = RedRobot.create_agents(model=self, n=n)
-            self.zones[zone]['agents'] += agents
+            self.robot_agents += agents
         
             # Create x and y positions for agents
             x = self.rng.integers(x_min, x_max, size=(n,))
@@ -71,5 +60,7 @@ class RobotMission(mesa.Model):
 
     def step(self):
         """do one step of the model"""
-        self.agents.shuffle_do("do")
+        # self.robot_agents.shuffle_do("do")
+        for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):  
+            agent.do()
         self.datacollector.collect(self)

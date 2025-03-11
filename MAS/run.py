@@ -26,7 +26,13 @@ print(w1)
 print(w2)
 print(w3)
 
-for zone in model.zones:
-    agents = model.zones[zone]['agents']
-    for a in agents:
-        print(f'Robot {type(a)} in {zone} zone at position ({a.pos[0]}, {a.pos[1]})')
+robot_agents = model.robot_agents
+for a in robot_agents:
+    print(f'Robot {type(a)} at position ({a.pos[0]}, {a.pos[1]})')
+        
+model.step()
+print('\n One step done ! \n')
+
+robot_agents = model.robot_agents
+for a in robot_agents:
+    print(f'Robot {type(a)} at position ({a.pos[0]}, {a.pos[1]})')
