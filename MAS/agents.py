@@ -1,1 +1,113 @@
-# TODO
+# GROUP : 23
+# DATE : 11.03.2025
+# MEMBERS :
+# - ZUO Yuxian
+# - NADALIN	Marius
+# - EL BARHICHI	Mohammed
+
+import mesa
+
+class GreenRobot(mesa.Agent):
+    """A robot that lives in the green zone (low radioactivity zone)"""
+
+    def __init__(self, model:mesa.Model):
+        """initialize a GreenRobot instance.
+
+        Args:
+            model: A RobotMission instance
+        """
+        super().__init__(model)
+        self.knwoledge = {
+            "actions" : [],
+            "percept" : [],
+            "grid_width" : self.model.width,
+            "grid_height" : self.model.height,
+        }
+
+    def percepts(self):
+        # Percieve the surronding environment and update its knowledge
+        contents = self.model.grid.get_cell_list_contents([self.pos])
+        self.knowledge.update()
+
+    def deliberate(self):
+        # Based on the current knowledge, choose an action to perform
+        possible_steps = self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False
+        )
+        new_position = self.random.choice(possible_steps)
+        self.model.grid.move_agent(self, new_position)
+
+    def do(self):
+        # Inform the environment about the chosen action
+        self.percepts()
+        action = self.deliberate()
+
+class YellowRobot(mesa.Agent):
+    """A robot that lives in the green & yellow zone (low to medium radioactivity zone)"""
+
+    def __init__(self, model:mesa.Model):
+        """initialize a YellowRobot instance.
+
+        Args:
+            model: A RobotMission instance
+        """
+        super().__init__(model)
+        self.knwoledge = {
+            "actions" : [],
+            "percept" : [],
+            "grid_width" : self.model.width,
+            "grid_height" : self.model.height,
+        }
+
+    def percepts(self):
+        # Percieve the surronding environment and update its knowledge
+        contents = self.model.grid.get_cell_list_contents([self.pos])
+        self.knowledge.update()
+
+    def deliberate(self):
+        # Based on the current knowledge, choose an action to perform
+        possible_steps = self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False
+        )
+        new_position = self.random.choice(possible_steps)
+        self.model.grid.move_agent(self, new_position)
+
+    def do(self):
+        # Inform the environment about the chosen action
+        self.percepts()
+        action = self.deliberate()
+
+class RedRobot(mesa.Agent):
+    """A robot that lives in the green, yellow & red zone (low to high radioactivity zone)"""
+
+    def __init__(self, model:mesa.Model):
+        """initialize a RedRobot instance.
+
+        Args:
+            model: A RobotMission instance
+        """
+        super().__init__(model)
+        self.knwoledge = {
+            "actions" : [],
+            "percept" : [],
+            "grid_width" : self.model.width,
+            "grid_height" : self.model.height,
+        }
+
+    def percepts(self):
+        # Percieve the surronding environment and update its knowledge
+        contents = self.model.grid.get_cell_list_contents([self.pos])
+        self.knowledge.update()
+
+    def deliberate(self):
+        # Based on the current knowledge, choose an action to perform
+        possible_steps = self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False
+        )
+        new_position = self.random.choice(possible_steps)
+        self.model.grid.move_agent(self, new_position)
+
+    def do(self):
+        # Inform the environment about the chosen action
+        self.percepts()
+        action = self.deliberate()
