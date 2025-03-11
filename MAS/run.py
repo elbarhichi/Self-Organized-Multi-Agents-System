@@ -3,7 +3,7 @@ from agents import GreenRobot, YellowRobot, RedRobot
 from model import RobotMission
 
 #Create RobotMission instance
-model = RobotMission(n=1, width=12, height=4)
+model = RobotMission(n=2, width=12, height=4)
 
 # Create radioactivity agents for different zones
 r1 = RadioactivityAgent(model, "green")
@@ -25,3 +25,8 @@ print(disposal_zone)
 print(w1)
 print(w2)
 print(w3)
+
+for zone in model.zones:
+    agents = model.zones[zone]['agents']
+    for a in agents:
+        print(f'Robot {type(a)} in {zone} zone at position ({a.pos[0]}, {a.pos[1]})')

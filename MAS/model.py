@@ -44,8 +44,8 @@ class RobotMission(mesa.Model):
             }
 
         # Initialize each zone
-        for zone, zone_info in self.zones.items():
-            bounds = zone_info['bounds']
+        for zone in self.zones:
+            bounds = self.zones[zone]['bounds']
             x_min, x_max = bounds[0]
             y_min, y_max = bounds[1]
         
@@ -56,6 +56,7 @@ class RobotMission(mesa.Model):
                 agents = YellowRobot.create_agents(model=self, n=n)
             elif zone == 'red':
                 agents = RedRobot.create_agents(model=self, n=n)
+            self.zones[zone]['agents'] += agents
         
             # Create x and y positions for agents
             x = self.rng.integers(x_min, x_max, size=(n,))
