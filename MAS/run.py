@@ -1,4 +1,4 @@
-from MAS.objects import RadioactivityAgent, WasteDisposalZone, WasteAgent
+from objects import RadioactivityAgent, WasteDisposalZone, WasteAgent
 
 # Create radioactivity agents for different zones
 r1 = RadioactivityAgent("z1")
