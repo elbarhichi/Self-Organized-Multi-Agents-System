@@ -11,7 +11,7 @@ from model import RobotMission
 import seaborn as sns
 
 #Create RobotMission instance
-model = RobotMission(n=2, width=12, height=4)
+model = RobotMission(num_robots=2, width=12, height=4)
 
 # Create radioactivity agents for different zones
 r1 = RadioactivityAgent(model, "green")

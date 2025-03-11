@@ -1,3 +1,10 @@
+# GROUP : 23
+# DATE : 11.03.2025
+# MEMBERS :
+# - ZUO Yuxian
+# - NADALIN	Marius
+# - EL BARHICHI	Mohammed
+
 from mesa.visualization import SolaraViz, make_space_component
 from model import RobotMission
 

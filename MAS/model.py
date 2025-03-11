@@ -23,7 +23,7 @@ def get_nb_wastes(model):
 class RobotMission(mesa.Model):
     """A model with some number of agents."""
 
-    def __init__(self, n=2, width=10, height=10, max_steps=20, seed=None):
+    def __init__(self, num_robots=2, width=10, height=10, max_steps=20, seed=None):
         """Initialize a RobotMission instance.
     
         Args:
@@ -32,7 +32,7 @@ class RobotMission(mesa.Model):
             height: Height of the grid.
         """
         super().__init__(seed=seed)
-        self.num_agents = n
+        self.num_robots = num_robots
         self.width = width
         self.height = height
         self.max_steps = max_steps
@@ -54,16 +54,16 @@ class RobotMission(mesa.Model):
         
             # Create agents
             if zone == 'green':
-                agents = GreenRobot.create_agents(model=self, n=n)
+                agents = GreenRobot.create_agents(model=self, n=num_robots)
             elif zone == 'yellow':
-                agents = YellowRobot.create_agents(model=self, n=n)
+                agents = YellowRobot.create_agents(model=self, n=num_robots)
             elif zone == 'red':
-                agents = RedRobot.create_agents(model=self, n=n)
+                agents = RedRobot.create_agents(model=self, n=num_robots)
             self.robot_agents += agents
         
             # Create x and y positions for agents
-            x = self.rng.integers(x_min, x_max, size=(n,))
-            y = self.rng.integers(y_min, y_max, size=(n,))
+            x = self.rng.integers(x_min, x_max, size=(num_robots,))
+            y = self.rng.integers(y_min, y_max, size=(num_robots,))
             
             for a, i, j in zip(agents, x, y):
                 # Add the agent to a random grid cell
