@@ -1,7 +1,10 @@
 import random
+import mesa
 
-class RadioactivityAgent:
-    def __init__(self, zone_type):
+class RadioactivityAgent(mesa.Agent):
+    def __init__(self, model:mesa.Model, zone_type):
+        super().__init__(model)
+        
         self.zone_type = zone_type
         self.radioactivity_level = self._assign_radioactivity()
 
@@ -19,20 +22,22 @@ class RadioactivityAgent:
     def __repr__(self):
         return f"RadioactivityAgent(zone={self.zone_type}, level={self.radioactivity_level:.2f})"
 
-class WasteDisposalZone:
-    def __init__(self, grid_width):
+class WasteDisposalZone(mesa.Agent):
+    def __init__(self, model:mesa.Model, grid_width):
         """
         Initializes the waste disposal zone at a random location in the easternmost column.
         """
+        super().__init__(model)
         self.position = (grid_width - 1, random.randint(0, grid_width - 1))
 
     def __repr__(self):
         return f"WasteDisposalZone(position={self.position})"
 
-class WasteAgent:
-    def __init__(self, waste_type):
+class WasteAgent(mesa.Agent):
+    def __init__(self, model:mesa.Model, waste_type):
         if waste_type not in {"green", "yellow", "red"}:
             raise ValueError("Invalid waste type. Must be 'green', 'yellow', or 'red'.")
+        super().__init__(model)
         self.waste_type = waste_type
 
     def __repr__(self):
