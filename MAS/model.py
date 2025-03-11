@@ -7,6 +7,19 @@
 
 import mesa
 from agents import GreenRobot, YellowRobot, RedRobot
+from objects import WasteAgent
+
+def get_nb_wastes(model):
+    nb_green, nb_yellow, nb_red = 0, 0, 0
+    for agent in model.agents:
+        if isinstance(agent, WasteAgent):
+            if agent.waste_type == "green":
+                nb_green += 1
+            elif agent.waste_type == "yellow":
+                nb_yellow += 1
+            elif agent.waste_type == "red":
+                nb_red += 1
+    return (nb_green, nb_yellow, nb_red)
 
 class RobotMission(mesa.Model):
     """A model with some number of agents."""
@@ -55,7 +68,7 @@ class RobotMission(mesa.Model):
                 # Add the agent to a random grid cell
                 self.grid.place_agent(a, (i, j))
 
-        self.datacollector = mesa.DataCollector()
+        self.datacollector = mesa.DataCollector(model_reporters={"Nb_wastes": get_nb_wastes})
         self.datacollector.collect(self)
 
     def step(self):
