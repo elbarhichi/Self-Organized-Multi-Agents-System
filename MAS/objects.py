@@ -1,3 +1,10 @@
+# GROUP : 23
+# DATE : 11.03.2025
+# MEMBERS :
+# - ZUO Yuxian
+# - NADALIN	Marius
+# - EL BARHICHI	Mohammed
+
 import random
 import mesa
 
@@ -39,6 +46,7 @@ class WasteAgent(mesa.Agent):
             raise ValueError("Invalid waste type. Must be 'green', 'yellow', or 'red'.")
         super().__init__(model)
         self.waste_type = waste_type
+        model.add_waste(self)
 
     def __repr__(self):
         return f"WasteAgent(type={self.waste_type})"

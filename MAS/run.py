@@ -1,3 +1,10 @@
+# GROUP : 23
+# DATE : 11.03.2025
+# MEMBERS :
+# - ZUO Yuxian
+# - NADALIN	Marius
+# - EL BARHICHI	Mohammed
+
 from objects import RadioactivityAgent, WasteDisposalZone, WasteAgent
 from agents import GreenRobot, YellowRobot, RedRobot
 from model import RobotMission
@@ -27,17 +34,13 @@ print(w1)
 print(w2)
 print(w3)
 
-robot_agents = model.robot_agents
-for a in robot_agents:
-    print(f'Robot {type(a)} at position ({a.pos[0]}, {a.pos[1]})')
-        
-model.step()
-print('\n One step done ! \n')
-
-robot_agents = model.robot_agents
-for a in robot_agents:
-    print(f'Robot {type(a)} at position ({a.pos[0]}, {a.pos[1]})')
+for step in range(3):
+    robot_agents = model.robot_agents
+    for a in robot_agents:
+        print(a)
+            
+    model.step()
+    print('\nOne step done ! \n')
     
-nb_wastes = model.datacollector.get_model_vars_dataframe()
-
-print(nb_wastes)
+df_nb_wastes = model.datacollector.get_model_vars_dataframe()
+print(df_nb_wastes)
