@@ -12,6 +12,12 @@ class RadioactivityAgent(mesa.Agent):
     def __init__(self, model:mesa.Model, zone_type):
         super().__init__(model)
         
+import mesa
+
+class RadioactivityAgent(mesa.Agent):
+    def __init__(self, model:mesa.Model, zone_type):
+        super().__init__(model)
+        
         self.zone_type = zone_type
         self.radioactivity_level = self._assign_radioactivity()
 
