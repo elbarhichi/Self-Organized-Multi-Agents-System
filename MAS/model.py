@@ -11,7 +11,7 @@ from agents import GreenRobot, YellowRobot, RedRobot
 class RobotMission(mesa.Model):
     """A model with some number of agents."""
 
-    def __init__(self, n=2, width=10, height=10, seed=None):
+    def __init__(self, n=2, width=10, height=10, max_steps=20, seed=None):
         """Initialize a RobotMission instance.
     
         Args:
@@ -21,6 +21,9 @@ class RobotMission(mesa.Model):
         """
         super().__init__(seed=seed)
         self.num_agents = n
+        self.width = width
+        self.height = height
+        self.max_steps = max_steps
         self.grid = mesa.space.MultiGrid(width, height, torus=False)
         self.zones = {
             'green' : 
@@ -41,8 +44,8 @@ class RobotMission(mesa.Model):
             }
 
         # Initialize each zone
-        for zone in self.zones:
-            bounds = self.zones[zone]
+        for zone, zone_info in self.zones.items():
+            bounds = zone_info['bounds']
             x_min, x_max = bounds[0]
             y_min, y_max = bounds[1]
         
