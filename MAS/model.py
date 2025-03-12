@@ -7,7 +7,7 @@
 
 import mesa
 from agents import GreenRobot, YellowRobot, RedRobot
-from objects import WasteAgent
+from objects import WasteAgent, RadioactivityAgent
 
 def get_nb_wastes(model):
     nb_green, nb_yellow, nb_red = 0, 0, 0
@@ -37,9 +37,9 @@ class RobotMission(mesa.Model):
         self.height = height
         self.max_steps = max_steps
         self.zone_bounds = {
-            'green' : [(0, width // 3), (0, height)],
-            'yellow' : [(width // 3 + 1, 2 * width // 3), (0, height)],
-            'red' : [(2 * width // 3 + 1, width), (0, height)]
+            'green' : [(0, width // 3), (0, height - 1)],
+            'yellow' : [(width // 3 + 1, 2 * width // 3), (0, height - 1)],
+            'red' : [(2 * width // 3 + 1, width - 1), (0, height - 1)]
             }
         self.grid = mesa.space.MultiGrid(width, height, torus=False)
         
@@ -55,21 +55,30 @@ class RobotMission(mesa.Model):
             # Create agents
             if zone == 'green':
                 agents = GreenRobot.create_agents(model=self, n=num_robots)
+                self.fill_radiactivity('green', x_min, x_max, y_min, y_max)
             elif zone == 'yellow':
                 agents = YellowRobot.create_agents(model=self, n=num_robots)
+                self.fill_radiactivity('yellow', x_min, x_max, y_min, y_max)
             elif zone == 'red':
                 agents = RedRobot.create_agents(model=self, n=num_robots)
+                self.fill_radiactivity('red', x_min, x_max, y_min, y_max)
             self.robot_agents += agents
         
             # Create x and y positions for agents
-            x = self.rng.integers(x_min, x_max, size=(num_robots,))
-            y = self.rng.integers(y_min, y_max, size=(num_robots,))
+            x = self.rng.integers(x_min, x_max + 1, size=(num_robots,))
+            y = self.rng.integers(y_min, y_max + 1, size=(num_robots,))
             
             for a, i, j in zip(agents, x, y):
                 # Add the agent to a random grid cell
                 self.grid.place_agent(a, (i, j))
 
         self.datacollector = mesa.DataCollector(model_reporters={"Nb_wastes": get_nb_wastes})
+        
+    def fill_radiactivity(self, zone_type, x_min, x_max, y_min, y_max):
+        for x in range(x_min, x_max + 1):
+            for y in range(y_min, y_max + 1):
+                radiactivity_agent = RadioactivityAgent(self, zone_type)
+                self.grid.place_agent(radiactivity_agent, (x, y))
         
     def add_waste(self, waste:WasteAgent):
         self.wastes.append(waste)
