@@ -8,14 +8,18 @@
 from mesa.visualization import SolaraViz, make_space_component
 from model import RobotMission
 from agents import GreenRobot, YellowRobot, RedRobot
-from objects import RadioactivityAgent
+from objects import RadioactivityAgent, WasteAgent
+
+# REFERENCE FOR COLORS : https://matplotlib.org/stable/gallery/color/named_colors.html
 
 # Define agent portrayal function (only colors robots, no environment coloring)
 def agent_portrayal(agent):
     portrayal = {
+            "color": "tab:blue",
             "size": 50,
             "linewidths": 1,
-            "zorder": 1,
+            "edgecolors":"black",
+            "zorder": 0,
             }
     
     if isinstance(agent, (GreenRobot, YellowRobot, RedRobot)):
@@ -25,31 +29,66 @@ def agent_portrayal(agent):
         robot_type = type(agent).__name__
 
         if robot_type == "GreenRobot":
-            portrayal["color"] = "green"
+            portrayal["color"] = "seagreen"
         elif robot_type == "YellowRobot":
             portrayal["color"] = "yellow"
         elif robot_type == "RedRobot":
             portrayal["color"] = "red"
 
     elif isinstance(agent, RadioactivityAgent):
-        portrayal["size"] = 100
-        portrayal["marker"] = "x"
+        portrayal["size"] = 200
+        portrayal["zorder"] = 1
+        portrayal["marker"] = "s"
         portrayal["color"] = 1 - agent.radioactivity_level
-        portrayal["linewidths"] = 0.5
+        portrayal["linewidths"] = 0
+        
+    elif isinstance(agent, WasteAgent):
+        portrayal["marker"] = "o"
+        waste_type = agent.waste_type
+        if waste_type == "green":
+            portrayal["color"] = "darkgreen"
+        elif waste_type == "yellow":
+            portrayal["color"] = "gold"
+        elif waste_type == "red":
+            portrayal["color"] = "firebrick"
+        portrayal["zorder"] = 2
 
     return portrayal
 
-model1 = RobotMission(num_robots=2, width=11, height=10)
+model1 = RobotMission(nb_green_robots=2,
+                      nb_yellow_robots=2,
+                      nb_red_robots=2,
+                      nb_green_wastes=6,
+                      nb_yellow_wastes=3,
+                      nb_red_wastes=3,
+                      width=12,
+                      height=8)
 
 model_params = {
     "width": model1.width,
     "height": model1.height,
-    "num_robots": {
+    "nb_green_robots": {
         "type": "SliderInt",
-        "value": model1.num_robots,
-        "label": "Number of robots:",
+        "value": model1.nb_green_robots,
+        "label": "Number of greeen robots:",
         "min": 1,
-        "max": 15,
+        "max": 10,
+        "step": 1,
+    },
+    "nb_yellow_robots": {
+        "type": "SliderInt",
+        "value": model1.nb_yellow_robots,
+        "label": "Number of yellow robots:",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+    },
+    "nb_red_robots": {
+        "type": "SliderInt",
+        "value": model1.nb_red_robots,
+        "label": "Number of red robots:",
+        "min": 1,
+        "max": 10,
         "step": 1,
     },
 }
