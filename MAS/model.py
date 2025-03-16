@@ -7,8 +7,9 @@
 
 import mesa
 from agents import RobotAgent, GreenRobot, YellowRobot, RedRobot
-from objects import WasteAgent, RadioactivityAgent, WasteDisposalZone
+from objects import WasteAgent, Radioactivity, WasteDisposalZone
 import actions as act
+import numpy as np
 
 def get_nb_wastes(model):
     nb_green, nb_yellow, nb_red = 0, 0, 0
@@ -25,16 +26,17 @@ class RobotMission(mesa.Model):
     """A model with some number of agents."""
 
     def __init__(self, 
-                 nb_green_robots=2,
-                 nb_yellow_robots=2,
-                 nb_red_robots=2,
-                 nb_green_wastes=6,
-                 nb_yellow_wastes=1,
-                 nb_red_wastes=1, 
-                 width=10, 
-                 height=10, 
-                 max_steps=20, 
-                 seed=None):
+                 nb_green_robots:int = 2,
+                 nb_yellow_robots:int = 2,
+                 nb_red_robots:int = 2,
+                 nb_green_wastes:int = 6,
+                 nb_yellow_wastes:int = 1,
+                 nb_red_wastes:int = 1,
+                 width:int = 10,
+                 height:int = 10,
+                 max_steps:int = 20,
+                 seed:int = None
+                 ) -> None:
         """Initialize a RobotMission instance.
     
         Args:
@@ -57,11 +59,13 @@ class RobotMission(mesa.Model):
             'yellow' : [(width // 3, 2 * width // 3 - 1), (0, height - 1)],
             'red' : [(2 * width // 3, width - 1), (0, height - 1)]
             }
-        self.grid = mesa.space.MultiGrid(width, height, torus=False)
+        self.rad_levels = mesa.space.PropertyLayer('rad_lvl', width, height, 0.0, dtype=float)
+        self.grid = mesa.space.MultiGrid(width, height, torus=False, property_layers=[self.rad_levels])
         
         self.robot_agents = [] # list of RobotAgents that interact in the RobotMission
         self.wastes = [] # list of WasteAgent to eliminate
         self.disposal_zones = [] # list of WasteDisposalZone tiles
+        self.rad_map = np.full((height, width), None, dtype=Radioactivity) # grid of Radiactivity objects
 
         # Initialize each zone
         for zone, nb_wastes in zip(self.zone_bounds, [nb_green_wastes, nb_yellow_wastes, nb_red_wastes]):
@@ -69,9 +73,9 @@ class RobotMission(mesa.Model):
             x_min, x_max = bounds[0]
             y_min, y_max = bounds[1]
         
-            # Fill each tile of the zone with a RadioactivityAgent
-            self.fill_radiactivity(zone, x_min, x_max, y_min, y_max)
-            
+            # Fill each tile of the zone with a Radioactivity
+            self.fill_radioactivity(zone, x_min, x_max, y_min, y_max)
+
             # Create and place WasteAgents in the zone
             self.create_and_place_wastes(nb_wastes, zone, x_min, x_max, y_min, y_max)
             
@@ -104,7 +108,17 @@ class RobotMission(mesa.Model):
 
         self.datacollector = mesa.DataCollector(model_reporters={"Nb_wastes": get_nb_wastes})
         
-    def fill_radiactivity(self, zone_type, x_min, x_max, y_min, y_max):
+    def set_radioactivity(self, pos:tuple[int, int], radiactivity:Radioactivity) -> None:
+        x, y = pos
+        i, j = y, self.height - 1 - x
+        self.rad_map[i, j] = radiactivity
+        
+    def get_radioactivity(self, pos:tuple[int, int]) -> Radioactivity:
+        x, y = pos
+        i, j = y, self.height - 1 - x
+        return self.rad_map[i, j]
+        
+    def fill_radioactivity(self, zone_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Fill each of tiles in RobotMission grid[x_min:x_max + 1, y_min:y_max + 1] with RadioactivityAgents.
     
         Args:
@@ -116,10 +130,11 @@ class RobotMission(mesa.Model):
         """
         for x in range(x_min, x_max + 1):
             for y in range(y_min, y_max + 1):
-                radiactivity_agent = RadioactivityAgent(self, zone_type)
-                self.grid.place_agent(radiactivity_agent, (x, y))
+                radiactivity = Radioactivity(self, zone_type)
+                self.rad_levels.set_cell((x, y), radiactivity.radioactivity_level)
+                self.set_radioactivity((x, y), radiactivity)
                 
-    def create_and_place_wastes(self, nb_wastes, waste_type, x_min, x_max, y_min, y_max):
+    def create_and_place_wastes(self, nb_wastes:int, waste_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Create nb_wastes WasteAgents and place them randomly in grid[x_min:x_max + 1, y_min:y_max + 1].
     
         Args:
@@ -136,20 +151,21 @@ class RobotMission(mesa.Model):
             waste_agent = WasteAgent(self, waste_type)
             self.grid.place_agent(waste_agent, (x, y))
             
-    def set_up_disposal_zone(self):
+    def set_up_disposal_zone(self) -> None:
+        """Set WasteDisposalZone agents on the rightmost column of the grid."""
         for y in range(self.height):
             disposal_tile = WasteDisposalZone(self)
             self.grid.place_agent(disposal_tile, (self.width - 1, y))
         
-    def add_waste(self, waste:WasteAgent):
+    def add_waste(self, waste:WasteAgent) -> None:
         """keep track of the new WasteAgents"""
         self.wastes.append(waste)
         
-    def add_disposal_zone(self, disposal_zone:WasteDisposalZone):
+    def add_disposal_zone(self, disposal_zone:WasteDisposalZone) -> None:
         """keep track of the new WasteDisposalZone"""
         self.disposal_zones.append(disposal_zone)
 
-    def step(self):
+    def step(self) -> None:
         """do one step of the model"""
         if self.steps == 1:
             # Initial state of the RobotMission
@@ -161,14 +177,14 @@ class RobotMission(mesa.Model):
         
         self.datacollector.collect(self)
         
-    def do(self, agent:RobotAgent, action:callable, *action_desc:int|float|None):
+    def do(self, agent:RobotAgent, action:str, *action_desc:int | float | None) -> None:
         if action == "move":
             if len(action_desc) < 1:
                 return
             direction = action_desc[0]
             new_pos = act.sim_move(agent, direction)
             # CHECK IF THE ACTION IS FEASIBLE
-            if new_pos[0] < 0 or new_pos[0] >= self.width or new_pos[1] <0 or new_pos[1] >= self.height:
+            if new_pos[0] < 0 or new_pos[0] >= self.width or new_pos[1] < 0 or new_pos[1] >= self.height:
                 return
             ## IF FEASIBLE, PERFORM THE ACTION 
             # TODO : destroy agent if agent in wrong zone

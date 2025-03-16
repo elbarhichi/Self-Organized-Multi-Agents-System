@@ -6,13 +6,11 @@
 # - EL BARHICHI	Mohammed
 
 import mesa
-from objects import RadioactivityAgent, WasteAgent, WasteDisposalZone
+from objects import WasteAgent, WasteDisposalZone
 from actions import sim_move
 
-from collections.abc import Callable # For typing
-
 class RobotAgent(mesa.Agent):
-    def __init__(self, model:mesa.Model):
+    def __init__(self, model:mesa.Model) -> None:
         """initialize a RobotAgent instance.
 
         Args:
@@ -40,22 +38,19 @@ class RobotAgent(mesa.Agent):
                 self.pos, moore=True, include_center=True
             )
         for ngb_pos in neighbour_cells:
-            ngb_perception = {'rad_level' : 1.0,
+            ngb_perception = {'rad_level' : float(self.model.get_radioactivity(ngb_pos)),
                               'content' : []
                               }
             for other_agent in self.model.grid.get_cell_list_contents([ngb_pos]):
-                if isinstance(other_agent, RadioactivityAgent):
-                    ngb_perception['rad_level'] = other_agent.radioactivity_level
-                else:
                     ngb_perception['content'].append(other_agent)
             self.knowledge["perceptions"][ngb_pos] = ngb_perception
 
-    def deliberate(self) -> tuple[Callable, str | int | None] | None:
+    def deliberate(self) -> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
         # Specific to the Robot type
         pass
 
-    def do(self) -> None:
+    def do(self) -> tuple[str, str | int | None]:
         # Inform the environment about the chosen action
         self.percepts()
         action, *action_desc = self.deliberate()
@@ -66,7 +61,7 @@ class RobotAgent(mesa.Agent):
 class GreenRobot(RobotAgent):
     """A robot that lives in the green zone (low radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model):
+    def __init__(self, model:mesa.Model) -> None:
         """initialize a GreenRobot instance.
 
         Args:
@@ -74,7 +69,7 @@ class GreenRobot(RobotAgent):
         """
         super().__init__(model)
         
-    def deliberate(self) -> tuple[Callable, str | int | None] | None:
+    def deliberate(self) -> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
         # Random move in green zone
         perceptions = self.knowledge["perceptions"]
@@ -109,7 +104,7 @@ class GreenRobot(RobotAgent):
 class YellowRobot(RobotAgent):
     """A robot that lives in the green & yellow zone (low to medium radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model):
+    def __init__(self, model:mesa.Model) -> None:
         """initialize a YellowRobot instance.
 
         Args:
@@ -117,7 +112,7 @@ class YellowRobot(RobotAgent):
         """
         super().__init__(model)
         
-    def deliberate(self)-> tuple[Callable, str | int | None] | None:
+    def deliberate(self)-> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
         # Random move in green or yellow zone
         perceptions = self.knowledge["perceptions"]
@@ -152,7 +147,7 @@ class YellowRobot(RobotAgent):
 class RedRobot(RobotAgent):
     """A robot that lives in the green, yellow & red zone (low to high radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model):
+    def __init__(self, model:mesa.Model) -> None:
         """initialize a RedRobot instance.
 
         Args:
@@ -160,7 +155,7 @@ class RedRobot(RobotAgent):
         """
         super().__init__(model)
         
-    def deliberate(self) -> tuple[Callable, str | int | None] | None:
+    def deliberate(self) -> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
         # Random move in green, yellow or red zone
         perceptions = self.knowledge["perceptions"]

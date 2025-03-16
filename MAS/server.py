@@ -8,7 +8,7 @@
 from mesa.visualization import SolaraViz, make_space_component
 from model import RobotMission
 from agents import GreenRobot, YellowRobot, RedRobot
-from objects import RadioactivityAgent, WasteAgent
+from objects import WasteDisposalZone, WasteAgent
 
 # REFERENCE FOR COLORS : https://matplotlib.org/stable/gallery/color/named_colors.html
 
@@ -35,11 +35,11 @@ def agent_portrayal(agent):
         elif robot_type == "RedRobot":
             portrayal["color"] = "red"
 
-    elif isinstance(agent, RadioactivityAgent):
-        portrayal["size"] = 200
+    elif isinstance(agent, WasteDisposalZone):
+        portrayal["size"] = 90
         portrayal["zorder"] = 1
-        portrayal["marker"] = "s"
-        portrayal["color"] = 1 - agent.radioactivity_level
+        portrayal["marker"] = "X"
+        portrayal["color"] = "tab:grey"
         portrayal["linewidths"] = 0
         
     elif isinstance(agent, WasteAgent):
@@ -94,7 +94,7 @@ model_params = {
 }
 
 # Visualization component (only robots, no environment coloring)
-SpaceGraph = make_space_component(agent_portrayal)
+SpaceGraph = make_space_component(agent_portrayal, {'rad_lvl' : {"colormap":'coolwarm', 'alpha':.25, "colorbar":True}})
 
 page = SolaraViz(
     model1,

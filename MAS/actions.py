@@ -5,10 +5,13 @@
 # - NADALIN	Marius
 # - EL BARHICHI	Mohammed
 
+import mesa.agent
+import mesa.model
 from objects import WasteAgent
+import mesa
 
 # Action simulation
-def sim_move(agent, direction):
+def sim_move(agent:mesa.agent, direction:str) -> tuple[int, int]:
     """Returns a new position based on the direction without modifying the agent."""
     x, y = agent.pos
     moves = {
@@ -20,17 +23,17 @@ def sim_move(agent, direction):
     return moves.get(direction, agent.pos)
 
 # Define actions as pure functions
-def move(model, agent, direction):
+def move(model:mesa.model, agent:mesa.agent, direction:str) -> None:
     """Move the agent in the specified direction."""
     new_pos = sim_move(agent, direction)
     model.grid.move_agent(agent, new_pos)
 
-def pick_up(model, agent, waste):
+def pick_up(model:mesa.model, agent:mesa.agent, waste:WasteAgent) -> None:
     """The agent picks up the waste."""
     agent.collected_wastes.append(waste)
     model.grid.remove_agent(waste)
             
-def combine_wastes(model, agent, waste_1, waste_2, combined_waste_type):
+def combine_wastes(model:mesa.model, agent:mesa.agent, waste_1:WasteAgent, waste_2:WasteAgent, combined_waste_type:str) -> None:
     """Transforms 2 wastes into a new form."""
     if (not waste_1 in agent.collected_wastes) or (not waste_2 in agent.collected_wastes):
         return
@@ -39,7 +42,7 @@ def combine_wastes(model, agent, waste_1, waste_2, combined_waste_type):
     agent.collected_wastes.remove(waste_2)
     agent.collected_wastes.append(combined_waste)
 
-def drop(model, agent, waste):
+def drop(model:mesa.model, agent:mesa.agent, waste:WasteAgent) -> None:
     """Drop down the waste."""
     if not waste in agent.collected_wastes:
         return
