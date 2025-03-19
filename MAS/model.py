@@ -5,11 +5,15 @@
 # - NADALIN	Marius
 # - EL BARHICHI	Mohammed
 
+import numpy as np
+import warnings
 import mesa
 from agents import RobotAgent, GreenRobot, YellowRobot, RedRobot
 from objects import WasteAgent, Radioactivity, WasteDisposalZone
 import actions as act
-import numpy as np
+
+# Suppress FutureWarnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def get_nb_wastes(model):
     nb_green, nb_yellow, nb_red = 0, 0, 0
@@ -106,7 +110,9 @@ class RobotMission(mesa.Model):
         # for agent in self.agents:
         #     print(agent)
 
-        self.datacollector = mesa.DataCollector(model_reporters={"Nb_wastes": get_nb_wastes})
+        self.datacollector = mesa.DataCollector(model_reporters={"Nb_green_wastes": self.get_nb_green_wastes,
+                                                                 "Nb_yellow_wastes": self.get_nb_yellow_wastes,
+                                                                 "Nb_red_wastes": self.get_nb_red_wastess})
         
     def set_radioactivity(self, pos:tuple[int, int], radiactivity:Radioactivity) -> None:
         x, y = pos
@@ -117,7 +123,16 @@ class RobotMission(mesa.Model):
         x, y = pos
         i, j = y, self.height - 1 - x
         return self.rad_map[i, j]
-        
+    
+    def get_nb_green_wastes(self) -> int:
+        return sum(waste.waste_type == "green" for waste in self.wastes)
+    
+    def get_nb_yellow_wastes(self) -> int:
+        return sum(waste.waste_type == "yellow" for waste in self.wastes)
+
+    def get_nb_red_wastess(self) -> int:
+        return sum(waste.waste_type == "red" for waste in self.wastes)
+          
     def fill_radioactivity(self, zone_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Fill each of tiles in RobotMission grid[x_min:x_max + 1, y_min:y_max + 1] with RadioactivityAgents.
     
@@ -160,6 +175,10 @@ class RobotMission(mesa.Model):
     def add_waste(self, waste:WasteAgent) -> None:
         """keep track of the new WasteAgents"""
         self.wastes.append(waste)
+        
+    def remove_waste(self, waste:WasteAgent) -> None:
+        """Delete the WasteAgent"""
+        self.wastes.remove(waste)
         
     def add_disposal_zone(self, disposal_zone:WasteDisposalZone) -> None:
         """keep track of the new WasteDisposalZone"""
@@ -239,3 +258,4 @@ class RobotMission(mesa.Model):
             # Delete the red wastes in the disposal zone
             if target_waste_type == "red" and any(waste.pos == disposal_zone.pos for disposal_zone in self.disposal_zones):
                 self.grid.remove_agent(waste)
+                self.remove_waste(waste)

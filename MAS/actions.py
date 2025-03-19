@@ -40,6 +40,8 @@ def combine_wastes(model:mesa.model, agent:mesa.agent, waste_1:WasteAgent, waste
     combined_waste = WasteAgent(model, combined_waste_type)
     agent.collected_wastes.remove(waste_1)
     agent.collected_wastes.remove(waste_2)
+    model.remove_waste(waste_1)
+    model.remove_waste(waste_2)
     agent.collected_wastes.append(combined_waste)
 
 def drop(model:mesa.model, agent:mesa.agent, waste:WasteAgent) -> None:
