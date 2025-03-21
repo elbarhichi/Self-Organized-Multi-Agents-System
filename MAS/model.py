@@ -8,9 +8,11 @@
 import numpy as np
 import warnings
 import mesa
-from agents import RobotAgent, GreenRobot, YellowRobot, RedRobot
 from objects import WasteAgent, Radioactivity, WasteDisposalZone
 import actions as act
+
+from agents.agents_base import RobotAgent, GreenRobot, YellowRobot, RedRobot
+from agents.agents_no_comm import GreenRobotNoComm, YellowRobotNoComm, RedRobotNoComm
 
 # Suppress FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -89,13 +91,13 @@ class RobotMission(mesa.Model):
             # Create agents
             if zone == 'green':
                 nb_robots = nb_green_robots
-                agents = GreenRobot.create_agents(model=self, n=nb_robots)
+                agents = GreenRobotNoComm.create_agents(model=self, n=nb_robots)
             elif zone == 'yellow':
                 nb_robots = nb_yellow_robots
-                agents = YellowRobot.create_agents(model=self, n=nb_robots)
+                agents = YellowRobotNoComm.create_agents(model=self, n=nb_robots)
             elif zone == 'red':
                 nb_robots = nb_red_robots
-                agents = RedRobot.create_agents(model=self, n=nb_robots)
+                agents = RedRobotNoComm.create_agents(model=self, n=nb_robots)
             self.robot_agents += agents
             
             # Create x and y positions for agents
@@ -190,7 +192,7 @@ class RobotMission(mesa.Model):
             # Initial state of the RobotMission
             self.datacollector.collect(self)
 
-        for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):  
+        for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
             action, *action_desc = agent.do()
             self.do(agent, action, *action_desc)
         

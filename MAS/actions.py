@@ -10,6 +10,7 @@ import mesa.model
 from objects import WasteAgent
 import mesa
 
+
 # Action simulation
 def sim_move(agent:mesa.agent, direction:str) -> tuple[int, int]:
     """Returns a new position based on the direction without modifying the agent."""
