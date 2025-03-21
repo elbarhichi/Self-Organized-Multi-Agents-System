@@ -86,9 +86,13 @@ class GreenRobot(RobotAgent):
         if can_get_green_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "green"
         
-        # Drop combined_wastes at zone border
-        if current_pos[0] == self.knowledge["grid_width"] // 3 - 1 and any(waste.waste_type == "yellow" for waste in self.knowledge["collected_wastes"]):
-            return "drop", "yellow"
+        # Drop combined_waste (yellow) at zone border
+        if any(waste.waste_type == "yellow" for waste in self.knowledge["collected_wastes"]):
+            if current_pos[0] == self.knowledge["grid_width"] // 3 - 1:
+                return "drop", "yellow"
+            # Move to the border
+            else:
+                return "move", "E"
         
         possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
         # GreenRobot zone is restricted to the left part
@@ -129,9 +133,13 @@ class YellowRobot(RobotAgent):
         if can_get_yellow_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "yellow"
         
-        # Drop combined_wastes at zone border
-        if current_pos[0] == (self.knowledge["grid_width"] // 3) * 2 - 1 and any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]):
-            return "drop", "red"
+        # Drop combined_waste (red) at zone border
+        if any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]):
+            if current_pos[0] == (self.knowledge["grid_width"] // 3) * 2 - 1:
+                return "drop", "red"
+            # Move to the border
+            else:
+                return "move", "E"
         
         possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
         # YellowRobot zone is restricted to the middle part
@@ -166,9 +174,13 @@ class RedRobot(RobotAgent):
         if can_get_red_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "red"
         
-        # Drop red waste at disposal zone
-        if any(isinstance(obj, WasteDisposalZone) for obj in perceptions[current_pos]['content']) and any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]):
-            return "drop", "red"
+        # Drop red waste at zone border
+        if any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]):
+            if any(isinstance(obj, WasteDisposalZone) for obj in perceptions[current_pos]['content']):
+                return "drop", "red"
+            # Move to the waste disposal zone
+            else:
+                return "move", "E"
         
         possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
         # RedRobot zone is restricted to the right part
