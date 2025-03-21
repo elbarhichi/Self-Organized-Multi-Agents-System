@@ -7,7 +7,7 @@
 
 from mesa.visualization import SolaraViz, make_space_component, make_plot_component
 from model import RobotMission
-from agents import GreenRobot, YellowRobot, RedRobot
+from agents.agents_base import GreenRobot, YellowRobot, RedRobot
 from objects import WasteDisposalZone, WasteAgent
 
 # REFERENCE FOR COLORS : https://matplotlib.org/stable/gallery/color/named_colors.html
@@ -26,13 +26,11 @@ def agent_portrayal(agent):
         portrayal["marker"] = "s"
         portrayal["zorder"] = 2
 
-        robot_type = type(agent).__name__
-
-        if robot_type == "GreenRobot":
+        if isinstance(agent, GreenRobot):
             portrayal["color"] = "seagreen"
-        elif robot_type == "YellowRobot":
+        elif isinstance(agent, YellowRobot):
             portrayal["color"] = "yellow"
-        elif robot_type == "RedRobot":
+        elif isinstance(agent, RedRobot):
             portrayal["color"] = "red"
 
     elif isinstance(agent, WasteDisposalZone):
