@@ -12,10 +12,25 @@ from objects import WasteAgent, Radioactivity, WasteDisposalZone
 import actions as act
 
 from agents.agents_base import RobotAgent, GreenRobot, YellowRobot, RedRobot
+
 from agents.agents_no_comm import GreenRobotNoComm, YellowRobotNoComm, RedRobotNoComm
+from agents.agents_with_comm import GreenRobotWithComm, YellowRobotWithComm, RedRobotWithComm
 
 # Suppress FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
+
+ROBOT_TYPE_TO_CLASSES = {
+    "No communication": {
+        "green": GreenRobotNoComm,
+        "yellow": YellowRobotNoComm,
+        "red": RedRobotNoComm
+    },
+    "With communication": {
+        "green": GreenRobotWithComm,
+        "yellow": YellowRobotWithComm,
+        "red": RedRobotWithComm
+    }
+}
 
 def get_nb_wastes(model):
     nb_green, nb_yellow, nb_red = 0, 0, 0
@@ -32,6 +47,7 @@ class RobotMission(mesa.Model):
     """A model with some number of agents."""
 
     def __init__(self, 
+                 robot_type="No communication",
                  nb_green_robots:int = 2,
                  nb_yellow_robots:int = 2,
                  nb_red_robots:int = 2,
@@ -51,6 +67,8 @@ class RobotMission(mesa.Model):
             height: Height of the grid.
         """
         super().__init__(seed=seed)
+        assert robot_type in ROBOT_TYPE_TO_CLASSES, f"robot_type must be in {ROBOT_TYPE_TO_CLASSES.keys()}"
+        self.robot_type = robot_type
         self.nb_green_robots = nb_green_robots
         self.nb_yellow_robots = nb_yellow_robots
         self.nb_red_robots = nb_red_robots
@@ -91,13 +109,13 @@ class RobotMission(mesa.Model):
             # Create agents
             if zone == 'green':
                 nb_robots = nb_green_robots
-                agents = GreenRobotNoComm.create_agents(model=self, n=nb_robots)
+                agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["green"].create_agents(model=self, n=nb_robots)
             elif zone == 'yellow':
                 nb_robots = nb_yellow_robots
-                agents = YellowRobotNoComm.create_agents(model=self, n=nb_robots)
+                agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["yellow"].create_agents(model=self, n=nb_robots)
             elif zone == 'red':
                 nb_robots = nb_red_robots
-                agents = RedRobotNoComm.create_agents(model=self, n=nb_robots)
+                agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["red"].create_agents(model=self, n=nb_robots)
             self.robot_agents += agents
             
             # Create x and y positions for agents
