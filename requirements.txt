@@ -2,4 +2,7 @@
 numpy
 seaborn
 matplotlib
-
+solara
+IPython
+networkx
+altair
