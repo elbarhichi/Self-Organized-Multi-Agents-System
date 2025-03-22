@@ -23,7 +23,31 @@ def agent_portrayal(agent):
             }
     
     if isinstance(agent, (GreenRobot, YellowRobot, RedRobot)):
-        portrayal["marker"] = "s"
+        
+        num_collected = len(agent.collected_wastes)
+        if num_collected == 1 :
+            if isinstance(agent, GreenRobot):
+                robot_type = "green"
+            elif isinstance(agent, YellowRobot):
+                robot_type = "yellow"
+            elif isinstance(agent, RedRobot):
+                robot_type = "red"
+            else:
+                robot_type = None
+
+            if robot_type is not None:
+                if agent.collected_wastes[0].waste_type == robot_type:
+                    portrayal["marker"] = "D"
+                else:
+                    portrayal["marker"] = "p"
+        elif num_collected == 2:
+            if agent.collected_wastes[0].waste_type == agent.collected_wastes[1].waste_type:
+                portrayal["marker"] = "p"
+            else :
+                portrayal["marker"] = "h"
+        else :
+            portrayal["marker"] = "s"
+        
         portrayal["zorder"] = 2
 
         if isinstance(agent, GreenRobot):
