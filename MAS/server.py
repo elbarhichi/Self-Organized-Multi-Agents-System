@@ -88,8 +88,22 @@ model1 = RobotMission(robot_type="No communication",
                       height=8)
 
 model_params = {
-    "width": model1.width,
-    "height": model1.height,
+    "width": {
+        "type": "SliderInt",
+        "value": model1.width,
+        "label": "Grid width:",
+        "min": 3,
+        "max": 30,
+        "step": 1,
+    },
+    "height": {
+        "type": "SliderInt",
+        "value": model1.height,
+        "label": "Grid height:",
+        "min": 3,
+        "max": 30,
+        "step": 1,
+    },
     "robot_type": {
         "type": "Select",
         "value": model1.robot_type,
