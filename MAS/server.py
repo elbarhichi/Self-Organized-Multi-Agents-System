@@ -77,7 +77,8 @@ def agent_portrayal(agent):
 
     return portrayal
 
-model1 = RobotMission(nb_green_robots=2,
+model1 = RobotMission(robot_type="No communication",
+                      nb_green_robots=2,
                       nb_yellow_robots=2,
                       nb_red_robots=2,
                       nb_green_wastes=6,
@@ -89,6 +90,12 @@ model1 = RobotMission(nb_green_robots=2,
 model_params = {
     "width": model1.width,
     "height": model1.height,
+    "robot_type": {
+        "type": "Select",
+        "value": model1.robot_type,
+        "label": "Robot type:",
+        "values": ["No communication", "With communication"],
+    },
     "nb_green_robots": {
         "type": "SliderInt",
         "value": model1.nb_green_robots,
