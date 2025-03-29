@@ -49,10 +49,15 @@ class GreenRobotNoComm(GreenRobot):
         possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
         # GreenRobot zone is restricted to the left part
         is_in_restricted_zone = lambda pos : pos[0] < self.knowledge["grid_width"] // 3
-        safe_directions = [direction for direction, new_pos in  possible_positions.items()
+
+        safe_dirs = [direction for direction, new_pos in  possible_positions.items()
                            if new_pos in perceptions and is_in_restricted_zone(new_pos) and perceptions[new_pos]['rad_level'] <= 0.33]
-        move_direction = self.random.choice(safe_directions)
+       
+        safe_dirs_nb_visit = {direction : perceptions[possible_positions[direction]]['nb_times_visited'] for direction in safe_dirs}
+        min_nb_visit = min(safe_dirs_nb_visit.values())
+        move_direction = self.random.choice([safe_dir for safe_dir, nb_visit in safe_dirs_nb_visit.items() if nb_visit == min_nb_visit])
         return "move", move_direction
+ 
 
     def __repr__(self) -> str:
         return f'Green robot at position ({self.pos[0]}, {self.pos[1]})'
