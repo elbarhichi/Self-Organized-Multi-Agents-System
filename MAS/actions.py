@@ -10,7 +10,24 @@ import mesa.model
 from objects import WasteAgent
 import mesa
 
+def is_pos_in_bounds(pos, x_min=None, x_max=None, y_min=None, y_max=None):
+    """Check if a position is within the bounds."""
+    x, y = pos
+    return (x_min is None or x_min <= x) and (x_max is None or x <= x_max) and (y_min is None or y_min <= y) and (y_max is None or y <= y_max)
 
+def dir_to_inbounds(pos, x_min=None, x_max=None, y_min=None, y_max=None):
+    """Get the direction to the nearest inbounds position."""
+    x, y = pos
+    if x < x_min:
+        return "E"
+    if x > x_max:
+        return "W"
+    if y < y_min:
+        return "N"
+    if y > y_max:
+        return "S"
+    return None
+    
 # Action simulation
 def sim_move(agent:mesa.agent, direction:str) -> tuple[int, int]:
     """Returns a new position based on the direction without modifying the agent."""
