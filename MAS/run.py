@@ -6,7 +6,7 @@
 # - EL BARHICHI	Mohammed
 
 from objects import Radioactivity, WasteDisposalZone, WasteAgent
-from agents import GreenRobot, YellowRobot, RedRobot
+from agents.agents_no_comm import GreenRobot, YellowRobot, RedRobot
 from model import RobotMission
 import seaborn as sns
 
