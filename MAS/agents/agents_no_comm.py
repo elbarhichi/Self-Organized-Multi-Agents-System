@@ -82,7 +82,7 @@ class GreenRobotNoComm(GreenRobot):
         if sum(waste.waste_type == "green" for waste in self.collected_wastes) == 1:
             other_green_pos = [
                 pos for pos, content in perceptions.items()
-                if any(wt == 'green' for wt in content['wastes']) and not any(
+                if any(wt == 'green' for wt in content['wastes']) and not all(
                     isinstance(obj, WasteAgent) and obj in self.recently_dropped
                     for obj in self.model.grid.get_cell_list_contents([pos])
                 )
@@ -186,7 +186,7 @@ class YellowRobotNoComm(YellowRobot):
         if sum(waste.waste_type == "yellow" for waste in self.collected_wastes) == 1:
             other_yellow_pos = [
                 pos for pos, content in perceptions.items()
-                if any(wt == 'yellow' for wt in content['wastes']) and not any(
+                if any(wt == 'yellow' for wt in content['wastes']) and not all(
                     isinstance(obj, WasteAgent) and obj in self.recently_dropped
                     for obj in self.model.grid.get_cell_list_contents([pos])
                 )
