@@ -7,7 +7,7 @@
 
 import mesa
 from objects import WasteAgent, WasteDisposalZone
-from actions import sim_move
+from actions import sim_move, is_pos_in_bounds, dir_to_inbounds
 from agents.agents_base import GreenRobot, YellowRobot, RedRobot
 
 class GreenRobotWithComm(GreenRobot):
@@ -38,8 +38,7 @@ class GreenRobotWithComm(GreenRobot):
         if sum(waste.waste_type == "green" for waste in self.knowledge["collected_wastes"]) >= 2:
             return "combine_wastes", "green", "green"
        
-        can_get_green_waste = any(isinstance(obj, WasteAgent) and obj.waste_type == 'green' 
-                                  for obj in perceptions[current_pos]['content'])
+        can_get_green_waste = any(waste_type == 'green' for waste_type in perceptions[current_pos]['wastes'])
         if can_get_green_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "green"
         
@@ -51,12 +50,17 @@ class GreenRobotWithComm(GreenRobot):
             else:
                 return "move", "E"
         
-        possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
-        # GreenRobot zone is restricted to the left part
-        is_in_restricted_zone = lambda pos : pos[0] < self.knowledge["grid_width"] // 3
-        safe_directions = [direction for direction, new_pos in  possible_positions.items()
-                           if new_pos in perceptions and is_in_restricted_zone(new_pos) and perceptions[new_pos]['rad_level'] <= 0.33]
-        move_direction = self.random.choice(safe_directions)
+        # Look for wastes to pick up
+        target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'green' for waste_type in content['wastes'])]
+        
+        # Move to the closest waste seen
+        if len(target_wastes_pos) > 0:
+            closest_waste_pos = min(target_wastes_pos, key=lambda pos: abs(pos[0] - current_pos[0]) + abs(pos[1] - current_pos[1]))
+            move_direction = self.dir_to_target(closest_waste_pos)
+            return "move", move_direction
+        
+        # If no waste seen, explore randomly
+        move_direction = self.random_exploration_dir()
         return "move", move_direction
 
     def __repr__(self) -> str:
@@ -90,8 +94,7 @@ class YellowRobotWithComm(YellowRobot):
         if sum(waste.waste_type == "yellow" for waste in self.knowledge["collected_wastes"]) >= 2:
             return "combine_wastes", "yellow", "yellow"
        
-        can_get_yellow_waste = any(isinstance(obj, WasteAgent) and obj.waste_type == 'yellow' 
-                                  for obj in perceptions[current_pos]['content'])
+        can_get_yellow_waste = any(waste_type == 'yellow' for waste_type in perceptions[current_pos]['wastes'])
         if can_get_yellow_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "yellow"
         
@@ -102,13 +105,26 @@ class YellowRobotWithComm(YellowRobot):
             # Move to the border
             else:
                 return "move", "E"
+            
+        # Look for wastes to pick up
+        target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'yellow' for waste_type in content['wastes'])]
         
-        possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
-        # YellowRobot zone is restricted to the middle part
-        is_in_restricted_zone = lambda pos : (pos[0] >= self.knowledge["grid_width"] // 3 - 1) and (pos[0] < 2 * self.knowledge["grid_width"] // 3)
-        safe_directions = [direction for direction, new_pos in  possible_positions.items()
-                           if new_pos in perceptions and is_in_restricted_zone(new_pos) and perceptions[new_pos]['rad_level'] <= 0.66]
-        move_direction = self.random.choice(safe_directions)
+        # Move to the closest waste seen
+        if len(target_wastes_pos) > 0:
+            closest_waste_pos = min(target_wastes_pos, key=lambda pos: abs(pos[0] - current_pos[0]) + abs(pos[1] - current_pos[1]))
+            move_direction = self.dir_to_target(closest_waste_pos)
+            return "move", move_direction
+        
+        x_min = self.knowledge["grid_width"] // 3 - 1
+        
+        # If no waste seen:
+        
+        if not(is_pos_in_bounds(current_pos, x_min=x_min)):
+            # get back in exploration bounds
+            move_direction = dir_to_inbounds(current_pos, x_min=x_min)
+        else:
+            # explore randomly in exploration bounds
+            move_direction = self.random_exploration_dir(x_min=x_min)
         return "move", move_direction
 
     def __repr__(self) -> str:
@@ -136,25 +152,38 @@ class RedRobotWithComm(RedRobot):
         perceptions = self.knowledge["perceptions"]
         current_pos = self.knowledge["current_pos"]
        
-        can_get_red_waste = any(isinstance(obj, WasteAgent) and obj.waste_type == 'red' 
-                                  for obj in perceptions[current_pos]['content'])
+        can_get_red_waste = any(waste_type == 'red' for waste_type in perceptions[current_pos]['wastes'])
         if can_get_red_waste and len(self.knowledge["collected_wastes"]) < 2:
             return "pick_up", "red"
         
         # Drop red waste at zone border
         if any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]):
-            if any(isinstance(obj, WasteDisposalZone) for obj in perceptions[current_pos]['content']):
+            if any(isinstance(obj, WasteDisposalZone) for obj in perceptions[current_pos]['other_agents']):
                 return "drop", "red"
             # Move to the waste disposal zone
             else:
                 return "move", "E"
+            
+        # Look for wastes to pick up
+        target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'red' for waste_type in content['wastes'])]
         
-        possible_positions = {direction : sim_move(self, direction) for direction in ["N", "S", "E", "W"]}
-        # RedRobot zone is restricted to the right part
-        is_in_restricted_zone = lambda pos : (pos[0] >= 2 * self.knowledge["grid_width"] // 3 - 1)
-        safe_directions = [direction for direction, new_pos in  possible_positions.items()
-                           if new_pos in perceptions and is_in_restricted_zone(new_pos)]
-        move_direction = self.random.choice(safe_directions)
+        # Move to the closest waste seen
+        if len(target_wastes_pos) > 0:
+            closest_waste_pos = min(target_wastes_pos, key=lambda pos: abs(pos[0] - current_pos[0]) + abs(pos[1] - current_pos[1]))
+            move_direction = self.dir_to_target(closest_waste_pos)
+            return "move", move_direction
+        
+        x_min = self.knowledge["grid_width"] // 3 * 2 - 1
+        x_max = self.knowledge["grid_width"] - 2
+        
+        # If no waste seen:
+        
+        if not(is_pos_in_bounds(current_pos, x_min=x_min, x_max=x_max)):
+            # get back in exploration bounds
+            move_direction = dir_to_inbounds(current_pos, x_min=x_min, x_max=x_max)
+        else:
+            # explore randomly in exploration bounds
+            move_direction = self.random_exploration_dir(x_min=x_min, x_max=x_max)
         return "move", move_direction
 
     def __repr__(self) -> str:
