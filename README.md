@@ -31,7 +31,7 @@ The simulation models an environment divided into three zones (low, medium, and 
 ## 4. Simulation Parameters & Modes
 Our simulation is designed to be modular and highly configurable. The following parameters can be adjusted on the fly:
 
-![Interface](images\interface.png)
+![Interface](images/interface.png)
 
 
 - **Environment Parameters:**
@@ -58,7 +58,7 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 
    The environment is represented as a grid, displaying robots, waste items, and disposal zones. The radioactivity level in each grid cell is represented using color gradients. 
 
-   ![Grid](images\grid.png)
+   ![Grid](images/grid.png)
 
   - **Wastes:** Displayed as full circles (disks) with colors indicating their type.
   - **Robots:** Shown as squares with colors specific to each robot type.
@@ -69,7 +69,7 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 
    In addition to the grid visualization, our simulation features a real-time performance metrics dashboard. This dashboard comprises two graphs:
 
-   ![Dashboard](images\dashboard.png)
+   ![Dashboard](images/dashboard.png)
 
 
    - **Simulation Steps:** A graph that dynamically displays the total number of steps taken during the simulation. This metric provides insight into the progression and speed of the simulation.
