@@ -9,6 +9,8 @@ from mesa.visualization import SolaraViz, make_space_component, make_plot_compon
 from model import RobotMission
 from agents.agents_base import GreenRobot, YellowRobot, RedRobot
 from objects import WasteDisposalZone, WasteAgent
+import solara
+
 
 # REFERENCE FOR COLORS : https://matplotlib.org/stable/gallery/color/named_colors.html
 
@@ -92,7 +94,7 @@ model_params = {
         "type": "SliderInt",
         "value": model1.width,
         "label": "Grid width:",
-        "min": 3,
+        "min": 8,
         "max": 30,
         "step": 1,
     },
@@ -173,9 +175,25 @@ NbTotalWastesPlot = make_plot_component(
     post_process=plot_post_process
 )
 
+
+@solara.component
+def MyLayout(model):
+    top_row = solara.Row(
+        [SpaceGraph(model)],
+        justify="center"
+    )
+    bottom_row = solara.Row([
+        NbTotalWastesPlot(model),
+        NbWastesPlot(model)
+    ])
+    return solara.Column([
+        top_row,
+        bottom_row
+    ])
+
 page = SolaraViz(
     model1,
-    components=[SpaceGraph, NbWastesPlot, NbTotalWastesPlot],
+    components=[MyLayout],
     model_params=model_params,
     name="Robot Waste Cleanup Simulation",
 )
