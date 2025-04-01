@@ -56,7 +56,6 @@ class RobotMission(mesa.Model):
                  nb_red_wastes:int = 1,
                  width:int = 10,
                  height:int = 10,
-                 max_steps:int = 20,
                  seed:int = None
                  ) -> None:
         """Initialize a RobotMission instance.
@@ -77,22 +76,33 @@ class RobotMission(mesa.Model):
         self.nb_red_wastes = nb_red_wastes
         self.width = width
         self.height = height
-        self.max_steps = max_steps
         self.zone_bounds = {
             'green' : [(0, width // 3 - 1), (0, height - 1)],
             'yellow' : [(width // 3, 2 * width // 3 - 1), (0, height - 1)],
             'red' : [(2 * width // 3, width - 1), (0, height - 1)]
             }
-        self.rad_levels = mesa.space.PropertyLayer('rad_lvl', width, height, 0.0, dtype=float)
-        self.grid = mesa.space.MultiGrid(width, height, torus=False, property_layers=[self.rad_levels])
         
+        self.reset()
+    
+    def reset(self) -> None:
+        """Reset the model to its initial state."""
+        
+        self.rad_levels = mesa.space.PropertyLayer('rad_lvl', self.width, self.height, 0.0, dtype=float)
+        self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False, property_layers=[self.rad_levels])
+        
+        self.datacollector = mesa.DataCollector(model_reporters={"Nb_green_wastes": self.get_nb_green_wastes,
+                                                                 "Nb_yellow_wastes": self.get_nb_yellow_wastes,
+                                                                 "Nb_red_wastes": self.get_nb_red_wastess,
+                                                                 "Nb_total_wastes": self.get_nb_total_wastes,})
+        
+        self.is_cleaned = False
         self.robot_agents = [] # list of RobotAgents that interact in the RobotMission
         self.wastes = [] # list of WasteAgent to eliminate
         self.disposal_zones = [] # list of WasteDisposalZone tiles
-        self.rad_map = np.full((height, width), None, dtype=Radioactivity) # grid of Radiactivity objects
-
+        self.rad_map = np.full((self.height, self.width), None, dtype=Radioactivity) # grid of Radiactivity objects
+        
         # Initialize each zone
-        for zone, nb_wastes in zip(self.zone_bounds, [nb_green_wastes, nb_yellow_wastes, nb_red_wastes]):
+        for zone, nb_wastes in zip(self.zone_bounds, [self.nb_green_wastes, self.nb_yellow_wastes, self.nb_red_wastes]):
             bounds = self.zone_bounds[zone]
             x_min, x_max = bounds[0]
             y_min, y_max = bounds[1]
@@ -108,13 +118,13 @@ class RobotMission(mesa.Model):
 
             # Create agents
             if zone == 'green':
-                nb_robots = nb_green_robots
+                nb_robots = self.nb_green_robots
                 agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["green"].create_agents(model=self, n=nb_robots)
             elif zone == 'yellow':
-                nb_robots = nb_yellow_robots
+                nb_robots = self.nb_yellow_robots
                 agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["yellow"].create_agents(model=self, n=nb_robots)
             elif zone == 'red':
-                nb_robots = nb_red_robots
+                nb_robots = self.nb_red_robots
                 agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["red"].create_agents(model=self, n=nb_robots)
             self.robot_agents += agents
             
@@ -126,14 +136,14 @@ class RobotMission(mesa.Model):
                 # Add the agent to a random grid cell
                 self.grid.place_agent(a, (i, j))
         
-        # DEBUG
-        # for agent in self.agents:
-        #     print(agent)
-
-        self.datacollector = mesa.DataCollector(model_reporters={"Nb_green_wastes": self.get_nb_green_wastes,
-                                                                 "Nb_yellow_wastes": self.get_nb_yellow_wastes,
-                                                                 "Nb_red_wastes": self.get_nb_red_wastess})
+        self.steps = 0
         
+    def is_mission_terminated(self) -> bool:
+        return self.is_cleaned
+    
+    def get_steps(self) -> int:
+        return self.steps
+      
     def set_radioactivity(self, pos:tuple[int, int], radiactivity:Radioactivity) -> None:
         x, y = pos
         i, j = y, self.height - 1 - x
@@ -152,7 +162,10 @@ class RobotMission(mesa.Model):
 
     def get_nb_red_wastess(self) -> int:
         return sum(waste.waste_type == "red" for waste in self.wastes)
-          
+
+    def get_nb_total_wastes(self) -> int:
+        return self.get_nb_green_wastes() + self.get_nb_yellow_wastes() + self.get_nb_red_wastess()
+      
     def fill_radioactivity(self, zone_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Fill each of tiles in RobotMission grid[x_min:x_max + 1, y_min:y_max + 1] with RadioactivityAgents.
     
@@ -213,6 +226,9 @@ class RobotMission(mesa.Model):
         for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
             action, *action_desc = agent.do()
             self.do(agent, action, *action_desc)
+        
+        if get_nb_wastes(self) == (0, 0, 0):
+            self.is_cleaned = True
         
         self.datacollector.collect(self)
         

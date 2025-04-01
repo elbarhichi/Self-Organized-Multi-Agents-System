@@ -11,7 +11,7 @@ from model import RobotMission
 import seaborn as sns
 
 #Create RobotMission instance
-model = RobotMission(num_robots=2, width=12, height=4)
+model = RobotMission(nb_green_robots=1, nb_yellow_robots=1, nb_red_robots=1, width=12, height=4)
 
 # Create radioactivity agents for different zones
 r1 = Radioactivity(model, "green")
@@ -19,7 +19,7 @@ r2 = Radioactivity(model, "yellow")
 r3 = Radioactivity(model, "red")
 
 # Create a waste disposal zone in a grid of width 10
-disposal_zone = WasteDisposalZone(model, grid_width=10)
+disposal_zone = WasteDisposalZone(model)
 
 # Create waste agents
 w1 = WasteAgent(model, "green")
@@ -44,3 +44,10 @@ for step in range(3):
     
 df_nb_wastes = model.datacollector.get_model_vars_dataframe()
 print(df_nb_wastes)
+
+print(model.steps)
+
+for _ in range(20):
+    model.step()
+
+print(model.steps)
