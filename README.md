@@ -1,6 +1,6 @@
 # Self-Organization of Robotic Agents in Hostile Environments
 
-## 1 Introduction
+## 1. Introduction
 
 This project aims to simulate the self-organization of heterogeneous robot agents assigned to handle hazardous waste in a radioactive environment. Each robot has specific capabilities and zone restrictions, and operates autonomously using agent-based modeling to perceive, reason, and act. The objective is to explore and evaluate three strategies: one without communication between agents, one with inter-agent communication, and a third that incorporates both communication and uncertainty.
 
