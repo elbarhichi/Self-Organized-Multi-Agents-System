@@ -19,11 +19,11 @@ This project aims to simulate the self-organization of heterogeneous robot agent
 ## Visualization
 
 The simulation provides a real-time visual interface to observe the behavior of the agents. Key visual components include:
-
 - A grid-based environment displaying robots, waste items, and disposal zones.
 - Visualization of the radioactivity level in each grid cell using color gradients. 
 - Real-time tracking of the number of different types of waste.  
 - Adjustable parameters via sliders to explore various scenarios.
+- A Robot Type Selector dropdown, allowing to switch between different agent strategies.
 
 
 ## Robot Behavior Strategies
