@@ -168,10 +168,14 @@ def plot_post_process(ax):
 # Visualization component (only robots, no environment coloring)
 SpaceGraph = make_space_component(agent_portrayal, {'rad_lvl' : {"colormap":'coolwarm', 'alpha':.25, "colorbar":True}})
 NbWastesPlot = make_plot_component({"Nb_green_wastes":"green", "Nb_yellow_wastes":"gold", "Nb_red_wastes":"red"}, post_process=plot_post_process)
+NbTotalWastesPlot = make_plot_component(
+    {"Nb_total_wastes": "black"},  
+    post_process=plot_post_process
+)
 
 page = SolaraViz(
     model1,
-    components=[SpaceGraph, NbWastesPlot],
+    components=[SpaceGraph, NbWastesPlot, NbTotalWastesPlot],
     model_params=model_params,
     name="Robot Waste Cleanup Simulation",
 )
