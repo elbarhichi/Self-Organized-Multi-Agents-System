@@ -51,3 +51,6 @@ for _ in range(20):
     model.step()
 
 print(model.steps)
+
+for robot in model.robot_agents:
+    print('robot name :', robot.unique_id)

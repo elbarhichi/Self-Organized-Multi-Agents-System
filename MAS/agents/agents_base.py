@@ -19,11 +19,20 @@ class RobotAgent(mesa.Agent):
         super().__init__(model)
         self.collected_wastes = []
         self.rad_resistance = 0
+        self.target_waste_type = None
         self.knowledge = {
-            "current_pos" : None,
-            "actions" : [],
-            "perceptions" : {},
-            "collected_wastes": [],
+            "current_pos" : None,       # pos
+            "last_action" : None,       # (action_name, *action_desc)
+            "action_success" : False,   # Success status of last action
+            "perceptions" : {},         # pos -> cell_perception
+            "hold_timer" : {},          # waste_type -> hold steps
+            "held_waste_origin" : {     # waste_type -> most recent pick up pos
+                "green" : None,
+                "yellow" : None,
+                "red" : None
+                },
+            "recent_drop_pos" : {},     # drop pos of target_waste_type -> steps since drop
+            "collected_wastes": [],     # List[ waste_type ]
             "grid_width" : self.model.width,
             "grid_height" : self.model.height,
         }
@@ -31,38 +40,27 @@ class RobotAgent(mesa.Agent):
     def percepts(self) -> None:
         # Percieve the surronding environment and update its knowledge
         # Update agent knowledge regarding the collected wastes
-        self.knowledge["collected_wastes"] = self.collected_wastes.copy()
+        self.knowledge["collected_wastes"] = [waste.waste_type for waste in self.collected_wastes]
         current_pos = self.pos
         self.knowledge["current_pos"] = current_pos
         
-        # Perception of surronding cells
-        neighbour_cells = self.model.grid.get_neighborhood(
-                self.pos, moore=True, include_center=True
-            )
-        for ngb_pos in neighbour_cells:
+        # Perception of surronding cells, agnostic of Agent Objects
+        surroundings = self.model.get_surroundings_perception(self)
+        # { pos : { 
+        #           'rad_level' : float
+        #            'wastes' : [ str ],
+        #            'other_agents' : [ {
+        #                   'id' : int,
+        #                   'robot_type' : str
+        #            }],
+        #   }}
+    
+        for ngb_pos in surroundings:
             if not ngb_pos in self.knowledge["perceptions"]:
-                self.knowledge["perceptions"][ngb_pos] = {
-                    'rad_level' : float(self.model.get_radioactivity(ngb_pos)),
-                    'wastes' : [],
-                    'other_agents' : [],
-                    'nb_times_visited' : 0,
-                    }
-            
+                self.knowledge["perceptions"][ngb_pos] = {'nb_times_visited' : 0}
             # Update the perception of the cell
-            new_content = {
-                'wastes' : [],
-                'other_agents' : [],
-                }
-            for other_agent in self.model.grid.get_cell_list_contents([ngb_pos]):
-                if other_agent == self:
-                    continue
-                if isinstance(other_agent, WasteAgent):
-                    new_content['wastes'].append(other_agent.waste_type)
-                else:
-                    new_content['other_agents'].append(other_agent)
-                
-            self.knowledge["perceptions"][ngb_pos].update(new_content)
-        
+            self.knowledge["perceptions"][ngb_pos].update(surroundings[ngb_pos])
+
         # Update the number of times the agent cell has been visited
         self.knowledge["perceptions"][current_pos]['nb_times_visited'] += 1
 
@@ -70,13 +68,18 @@ class RobotAgent(mesa.Agent):
         # Based on the current knowledge, choose an action to perform
         # Specific to the Robot type
         pass
+    
+    def perceive_feedback(self, action_success:bool) -> None:
+        # Get feedback on completion status of last action choosen
+        # Method invoked by the model on step
+        self.knowledge["action_success"] = action_success
 
     def do(self) -> tuple[str, str | int | None]:
         # Inform the environment about the chosen action
         self.percepts()
         action, *action_desc = self.deliberate()
         # Keep track of actions taken
-        self.knowledge["actions"].append((action, *action_desc))
+        self.knowledge["last_action"] = (action, *action_desc)
         return action, *action_desc
     
     def dir_to_target(self, target:tuple[int, int]) -> str:
@@ -118,6 +121,7 @@ class GreenRobot(RobotAgent):
         """
         super().__init__(model)
         self.rad_resistance = 0.33
+        self.target_waste_type = "green"
 
     def __repr__(self) -> str:
         return f'Green robot at position ({self.pos[0]}, {self.pos[1]})'
@@ -133,6 +137,7 @@ class YellowRobot(RobotAgent):
         """
         super().__init__(model)
         self.rad_resistance = 0.66
+        self.target_waste_type = "yellow"
 
     def __repr__(self) -> str:
         return f'Yellow robot at position ({self.pos[0]}, {self.pos[1]})'
@@ -148,6 +153,7 @@ class RedRobot(RobotAgent):
         """
         super().__init__(model)
         self.rad_resistance = 1.0
+        self.target_waste_type = "red"
 
     def __repr__(self) -> str:
         return f'Red robot at position ({self.pos[0]}, {self.pos[1]})'

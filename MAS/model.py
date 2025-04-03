@@ -220,52 +220,97 @@ class RobotMission(mesa.Model):
             self.datacollector.collect(self)
 
         for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
-            action, *action_desc = agent.do()
-            self.do(agent, action, *action_desc)
+            action, *action_desc = agent.do() # Get robot decision
+            action_success = self.do(agent, action, *action_desc) # Apply action if feasible
+            agent.perceive_feedback(action_success) # Give feedback on action success
         
         if get_nb_wastes(self) == (0, 0, 0):
             self.is_cleaned = True
         
         self.datacollector.collect(self)
         
-    def do(self, agent:RobotAgent, action:str, *action_desc:int | float | None) -> None:
+    def get_surroundings_perception(self, agent):
+        """Return a view of the agent surroundings agnostic of Agent Objects"""
+        # { pos : { 
+        #           'rad_level' : float
+        #            'wastes' : [ str ],
+        #            'other_agents' : [ {
+        #                   'id' : int,
+        #                   'robot_type' : str
+        #            }],
+        #   }}
+        
+        neighbour_cells = self.grid.get_neighborhood(
+                agent.pos, moore=True, include_center=True
+            )
+        surroundings = {}
+        for ngb_pos in neighbour_cells:
+            surroundings[ngb_pos] = {
+                'rad_level' : float(self.get_radioactivity(ngb_pos)),
+                'wastes' : [],
+                'other_agents' : [],
+                }
+            for ngb_agent in self.grid.get_cell_list_contents([ngb_pos]):
+                if ngb_agent == agent:
+                    continue
+                if isinstance(ngb_agent, WasteAgent):
+                    surroundings[ngb_pos]['wastes'].append(ngb_agent.waste_type)
+                elif isinstance(ngb_agent, WasteDisposalZone):
+                    surroundings[ngb_pos]['other_agents'].append({
+                        'id' : None,
+                        'agent_type' : "disposal_zone"
+                        })
+                else:
+                    agent_type = "green" if isinstance(ngb_agent, GreenRobot) else "yellow" if isinstance(ngb_agent, YellowRobot) else "red"
+                    surroundings[ngb_pos]['other_agents'].append({
+                        'id' : ngb_agent.unique_id,
+                        'agent_type' : agent_type
+                        })
+        return surroundings
+        
+    def do(self, agent:RobotAgent, action:str, *action_desc:int | float | None) -> bool:
+        """Perform the agent action if feasible. Return feasibility status."""
         if action == "move":
             if len(action_desc) < 1:
-                return
+                return False
             direction = action_desc[0]
             new_pos = act.sim_move(agent, direction)
             # CHECK IF THE ACTION IS FEASIBLE
             if new_pos[0] < 0 or new_pos[0] >= self.width or new_pos[1] < 0 or new_pos[1] >= self.height:
-                return
+                return False
             ## IF FEASIBLE, PERFORM THE ACTION 
             # TODO : destroy agent if agent in wrong zone
             act.ACTIONS["move"](self, agent, direction)
+            return True
                 
         elif action == "pick_up":
             if len(action_desc) < 1:
-                return
+                return False
             target_waste_type = action_desc[0]
             # CHECK IF THE ACTION IS FEASIBLE
             if len(agent.collected_wastes) >= 2:
-                return
+                return False
             if (target_waste_type == "red" and isinstance(agent, (GreenRobot))):
-                return
+                return False
+            target_waste_list = [other_agent for other_agent in self.grid.get_cell_list_contents([agent.pos])
+                                 if isinstance(other_agent, WasteAgent) and other_agent.waste_type == target_waste_type]
+            if len(target_waste_list) == 0:
+                return False
             ## IF FEASIBLE, PERFORM THE ACTION 
-            for other_agent in self.grid.get_cell_list_contents([agent.pos]):
-                if isinstance(other_agent, WasteAgent) and other_agent.waste_type == target_waste_type:
-                    act.ACTIONS["pick_up"](self, agent, other_agent)
+            other_agent = target_waste_list[0]
+            act.ACTIONS["pick_up"](self, agent, other_agent)
                     
         elif action == "combine_wastes":
             if len(action_desc) < 2:
-                return
+                return False
             waste_type_1, waste_type_2 = action_desc[0], action_desc[1]
             # CHECK IF THE ACTION IS FEASIBLE
             if waste_type_1 != waste_type_2 or waste_type_1 == "red":
-                return
+                return False
             target_waste_type = waste_type_1
             target_wastes_index = [i for i, waste in enumerate(agent.collected_wastes) if waste.waste_type == target_waste_type][:2]
             if len(target_wastes_index) < 2:
-                return
+                return False
             ## IF FEASIBLE, PERFORM THE ACTION 
             if target_waste_type == "green":
                 combined_waste_type = "yellow"
@@ -277,12 +322,12 @@ class RobotMission(mesa.Model):
             
         elif action == "drop":
             if len(action_desc) < 1:
-                return
+                return False
             target_waste_type = action_desc[0]
             # CHECK IF THE ACTION IS FEASIBLE
             target_wastes_index = [i for i, waste in enumerate(agent.collected_wastes) if waste.waste_type == target_waste_type][:1]
             if len(target_wastes_index) < 1:
-                return
+                return False
             ## IF FEASIBLE, PERFORM THE ACTION
             waste = agent.collected_wastes[target_wastes_index[0]]
             act.ACTIONS["drop"](self, agent, waste)
@@ -291,3 +336,5 @@ class RobotMission(mesa.Model):
             if target_waste_type == "red" and any(waste.pos == disposal_zone.pos for disposal_zone in self.disposal_zones):
                 self.grid.remove_agent(waste)
                 self.remove_waste(waste)
+        
+        return True # Action is successful
