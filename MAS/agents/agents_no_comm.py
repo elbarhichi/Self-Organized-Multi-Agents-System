@@ -113,6 +113,7 @@ class GreenRobotNoComm(GreenRobot):
         # If no waste seen, explore randomly
         move_direction = self.random_exploration_dir()
         return "move", move_direction
+ 
 
     def __repr__(self) -> str:
         return f'Green robot at position ({self.pos[0]}, {self.pos[1]})'

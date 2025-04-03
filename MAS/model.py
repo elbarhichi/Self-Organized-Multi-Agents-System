@@ -92,7 +92,8 @@ class RobotMission(mesa.Model):
         
         self.datacollector = mesa.DataCollector(model_reporters={"Nb_green_wastes": self.get_nb_green_wastes,
                                                                  "Nb_yellow_wastes": self.get_nb_yellow_wastes,
-                                                                 "Nb_red_wastes": self.get_nb_red_wastess})
+                                                                 "Nb_red_wastes": self.get_nb_red_wastess,
+                                                                 "Nb_total_wastes": self.get_nb_total_wastes,})
         
         self.is_cleaned = False
         self.robot_agents = [] # list of RobotAgents that interact in the RobotMission
@@ -161,7 +162,10 @@ class RobotMission(mesa.Model):
 
     def get_nb_red_wastess(self) -> int:
         return sum(waste.waste_type == "red" for waste in self.wastes)
-          
+
+    def get_nb_total_wastes(self) -> int:
+        return self.get_nb_green_wastes() + self.get_nb_yellow_wastes() + self.get_nb_red_wastess()
+      
     def fill_radioactivity(self, zone_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Fill each of tiles in RobotMission grid[x_min:x_max + 1, y_min:y_max + 1] with RadioactivityAgents.
     
