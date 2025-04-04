@@ -356,6 +356,9 @@ class RobotMission(mesa.Model):
     
     def step(self) -> None:
         """do one step of the model"""
+        if not self.running:
+            return
+        
         if self.steps == 1:
             # Initial state of the RobotMission
             self.datacollector.collect(self)
@@ -370,5 +373,6 @@ class RobotMission(mesa.Model):
         
         if get_nb_wastes(self) == (0, 0, 0):
             self.is_cleaned = True
+            self.running = False
         
         self.datacollector.collect(self)
