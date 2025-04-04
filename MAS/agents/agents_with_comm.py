@@ -26,16 +26,23 @@ class GreenRobotWithComm(GreenRobot, CommunicatingAgent):
         super().__init__(model, "GreenRobot", is_prefix_name=True)
         
     def send_msg(self, msg_performative: MessagePerformative, msg_exp: str, msg_content: str | int) -> None:
-        """Send a message to other agents.
+        """Send a message to another agent.
 
         Args:
             msg_performative: The performative of the message.
-            msg_exp: The expression of the message.
+            msg_exp: The name of the receiver.
             msg_content: The content of the message.
         """
         self.send_message(Message(self.get_name(), msg_exp, msg_performative, msg_content))
         
     def broadcast_msg(self, msg_performative: MessagePerformative, msg_group_exp: str, msg_content: str | int) -> None:
+        """Send a message to a group of agents.
+
+        Args:
+            msg_performative: The performative of the message.
+            msg_group_exp: The name of the receiver group ("green", "yellow", "red").
+            msg_content: The content of the message.
+        """
         self.model.broadcast_message(self.get_name(), msg_group_exp, msg_performative, msg_content)
     
     def percepts(self):
@@ -216,7 +223,7 @@ class RedRobotWithComm(RedRobot, CommunicatingAgent):
         
         # Drop red waste at zone border
         if any(waste_type == "red" for waste_type in self.knowledge["collected_wastes"]):
-            if any(isinstance(obj, WasteDisposalZone) for obj in perceptions[current_pos]['other_agents']):
+            if any(other_agent["agent_type"] == 'disposal_zone' for other_agent in perceptions[current_pos]['other_agents']):
                 return "drop", "red"
             # Move to the waste disposal zone
             else:
