@@ -16,6 +16,10 @@ from agents.agents_base import RobotAgent, GreenRobot, YellowRobot, RedRobot
 from agents.agents_no_comm import GreenRobotNoComm, YellowRobotNoComm, RedRobotNoComm
 from agents.agents_with_comm import GreenRobotWithComm, YellowRobotWithComm, RedRobotWithComm
 
+from communication.message.Message import Message
+from communication.message.MessagePerformative import MessagePerformative
+from communication.message.MessageService import MessageService
+
 # Suppress FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -101,6 +105,11 @@ class RobotMission(mesa.Model):
         self.disposal_zones = [] # list of WasteDisposalZone tiles
         self.rad_map = np.full((self.height, self.width), None, dtype=Radioactivity) # grid of Radiactivity objects
         
+        # Create messages service
+        self.__messages_service = MessageService(self)
+        self.__messages_service.set_instant_delivery(False)
+        self.running = True
+        
         # Initialize each zone
         for zone, nb_wastes in zip(self.zone_bounds, [self.nb_green_wastes, self.nb_yellow_wastes, self.nb_red_wastes]):
             bounds = self.zone_bounds[zone]
@@ -118,7 +127,7 @@ class RobotMission(mesa.Model):
 
             # Create agents
             if zone == 'green':
-                nb_robots = self.nb_green_robots
+                nb_robots = self.nb_green_robots 
                 agents = ROBOT_TYPE_TO_CLASSES[self.robot_type]["green"].create_agents(model=self, n=nb_robots)
             elif zone == 'yellow':
                 nb_robots = self.nb_yellow_robots
@@ -216,22 +225,24 @@ class RobotMission(mesa.Model):
     def add_disposal_zone(self, disposal_zone:WasteDisposalZone) -> None:
         """keep track of the new WasteDisposalZone"""
         self.disposal_zones.append(disposal_zone)
-
-    def step(self) -> None:
-        """do one step of the model"""
-        if self.steps == 1:
-            # Initial state of the RobotMission
-            self.datacollector.collect(self)
-
-        for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
-            action, *action_desc = agent.do() # Get robot decision
-            action_success = self.do(agent, action, *action_desc) # Apply action if feasible
-            agent.perceive_feedback(action_success) # Give feedback on action success
         
-        if get_nb_wastes(self) == (0, 0, 0):
-            self.is_cleaned = True
+    def broadcast_message(self, msg_sender:str, msg_group_exp:str, msg_performative:str, msg_content:str|int) -> None:
+        """Send a message to a specific group of Agents."""
+        if msg_group_exp not in ["green", "yellow", "red"]:
+            raise ValueError("msg_group_expr must be one of ['green', 'yellow', 'red']")
         
-        self.datacollector.collect(self)
+        for robot_agent in self.robot_agents:
+            msg_exp = None
+            if isinstance(robot_agent, GreenRobot) and msg_group_exp == "green":
+                msg_exp = "GreenRobot" + str(robot_agent.unique_id)
+            elif isinstance(robot_agent, YellowRobot) and msg_group_exp == "yellow":
+                msg_exp = "YellowRobot" + str(robot_agent.unique_id)
+            elif isinstance(robot_agent, RedRobot) and msg_group_exp == "red":
+                msg_exp = "RedRobot" + str(robot_agent.unique_id)
+
+            if msg_exp is not None:
+                message = Message(msg_sender, msg_exp, msg_performative, msg_content)
+                self.__messages_service.send_message(message)
         
     def get_surroundings_perception(self, agent):
         """Return a view of the agent surroundings agnostic of Agent Objects"""
@@ -342,3 +353,22 @@ class RobotMission(mesa.Model):
                 self.remove_waste(waste)
         
         return True # Action is successful
+    
+    def step(self) -> None:
+        """do one step of the model"""
+        if self.steps == 1:
+            # Initial state of the RobotMission
+            self.datacollector.collect(self)
+            
+        # Perform message dispatching
+        self.__messages_service.dispatch_messages()
+
+        for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
+            action, *action_desc = agent.do() # Get robot decision
+            action_success = self.do(agent, action, *action_desc) # Apply action if feasible
+            agent.perceive_feedback(action_success) # Give feedback on action success
+        
+        if get_nb_wastes(self) == (0, 0, 0):
+            self.is_cleaned = True
+        
+        self.datacollector.collect(self)

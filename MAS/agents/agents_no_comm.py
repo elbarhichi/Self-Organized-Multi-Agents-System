@@ -28,8 +28,7 @@ class GreenRobotNoComm(GreenRobot):
         
         # Update robot knowledge based of last action success feedback
         action_success = self.knowledge["action_success"]
-        if self.knowledge["last_action"]:
-            last_action, *last_action_desc = self.knowledge["last_action"]
+        last_action, *last_action_desc = self.knowledge["last_action"]
         
         if action_success:
             if last_action == "pick_up":
@@ -136,8 +135,7 @@ class YellowRobotNoComm(YellowRobot):
         
         # Update robot knowledge based of last action success feedback
         action_success = self.knowledge["action_success"]
-        if self.knowledge["last_action"]:
-            last_action, *last_action_desc = self.knowledge["last_action"]
+        last_action, *last_action_desc = self.knowledge["last_action"]
         
         if action_success:
             if last_action == "pick_up":

@@ -22,13 +22,18 @@ class MessageService:
     def __init__(self, model,instant_delivery=True):
         """ Create a new MessageService object.
         """
-        if MessageService.__instance is not None:
-            raise Exception("This class is a singleton!")
-        else:
-            MessageService.__instance = self
-            self.__model = model
-            self.__instant_delivery = instant_delivery
-            self.__messages_to_proceed = []
+        # if MessageService.__instance is not None:
+        #     raise Exception("This class is a singleton!")
+        # else:
+        #     MessageService.__instance = self
+        #     self.__model = model
+        #     self.__instant_delivery = instant_delivery
+        #     self.__messages_to_proceed = []
+            
+        MessageService.__instance = self
+        self.__model = model
+        self.__instant_delivery = instant_delivery
+        self.__messages_to_proceed = []
 
     def set_instant_delivery(self, instant_delivery):
         """ Set the instant delivery parameter.
@@ -67,7 +72,7 @@ class MessageService:
         """ Return the agent according to the agent name given.
         """
         
-        for agent in self.__model.agents:
+        for agent in self.__model.robot_agents:
         
             if agent.get_name() == agent_name:
             

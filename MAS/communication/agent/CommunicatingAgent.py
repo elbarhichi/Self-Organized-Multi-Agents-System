@@ -19,10 +19,12 @@ class CommunicatingAgent(Agent):
         message_service: The message service used to send and receive message (MessageService)
     """
 
-    def __init__(self,model,name):
+    def __init__(self, model, name, is_prefix_name=False, *args, **kwargs):
         """ Create a new communicating agent.
         """
-        super().__init__(model)
+        super().__init__(model, *args, **kwargs)
+        if is_prefix_name:
+            name += str(self.unique_id)
         self.__name = name
         self.__mailbox = Mailbox()
         self.__messages_service = MessageService.get_instance()
