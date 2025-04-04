@@ -29,7 +29,7 @@ class MessageService:
         #     self.__model = model
         #     self.__instant_delivery = instant_delivery
         #     self.__messages_to_proceed = []
-        
+            
         MessageService.__instance = self
         self.__model = model
         self.__instant_delivery = instant_delivery
@@ -72,7 +72,7 @@ class MessageService:
         """ Return the agent according to the agent name given.
         """
         
-        for agent in self.__model.agents:
+        for agent in self.__model.robot_agents:
         
             if agent.get_name() == agent_name:
             

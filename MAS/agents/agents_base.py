@@ -10,29 +10,29 @@ from actions import sim_move, is_pos_in_bounds
 from objects import WasteAgent
 
 class RobotAgent(mesa.Agent):
-    def __init__(self, model:mesa.Model) -> None:
+    def __init__(self, model:mesa.Model, *args, **kwargs) -> None:
         """initialize a RobotAgent instance.
 
         Args:
             model: A RobotMission instance
         """
-        super().__init__(model)
+        super().__init__(model, *args, **kwargs)
         self.collected_wastes = []
         self.rad_resistance = 0
         self.target_waste_type = None
         self.knowledge = {
-            "current_pos" : None,       # pos
-            "last_action" : None,       # (action_name, *action_desc)
-            "action_success" : False,   # Success status of last action
-            "perceptions" : {},         # pos -> cell_perception
-            "hold_timer" : {},          # waste_type -> hold steps
-            "held_waste_origin" : {     # waste_type -> most recent pick up pos
+            "current_pos" : None,           # pos
+            "last_action" : (None, None),   # (action_name, *action_desc)
+            "action_success" : False,       # Success status of last action
+            "perceptions" : {},             # pos -> cell_perception
+            "hold_timer" : {},              # waste_type -> hold steps
+            "held_waste_origin" : {         # waste_type -> most recent pick up pos
                 "green" : None,
                 "yellow" : None,
                 "red" : None
                 },
-            "recent_drop_pos" : {},     # drop pos of target_waste_type -> steps since drop
-            "collected_wastes": [],     # List[ waste_type ]
+            "recent_drop_pos" : {},         # drop pos of target_waste_type -> steps since drop
+            "collected_wastes": [],         # List[ waste_type ]
             "grid_width" : self.model.width,
             "grid_height" : self.model.height,
         }
@@ -113,13 +113,13 @@ class RobotAgent(mesa.Agent):
 class GreenRobot(RobotAgent):
     """A robot that lives in the green zone (low radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model) -> None:
+    def __init__(self, model:mesa.Model, *args, **kwargs) -> None:
         """initialize a GreenRobot instance.
 
         Args:
             model: A RobotMission instance
         """
-        super().__init__(model)
+        super().__init__(model , *args, **kwargs)
         self.rad_resistance = 0.33
         self.target_waste_type = "green"
 
@@ -129,13 +129,13 @@ class GreenRobot(RobotAgent):
 class YellowRobot(RobotAgent):
     """A robot that lives in the green & yellow zone (low to medium radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model) -> None:
+    def __init__(self, model:mesa.Model, *args, **kwargs) -> None:
         """initialize a YellowRobot instance.
 
         Args:
             model: A RobotMission instance
         """
-        super().__init__(model)
+        super().__init__(model, *args, **kwargs)
         self.rad_resistance = 0.66
         self.target_waste_type = "yellow"
 
@@ -145,13 +145,13 @@ class YellowRobot(RobotAgent):
 class RedRobot(RobotAgent):
     """A robot that lives in the green, yellow & red zone (low to high radioactivity zone)"""
 
-    def __init__(self, model:mesa.Model) -> None:
+    def __init__(self, model:mesa.Model, *args, **kwargs) -> None:
         """initialize a RedRobot instance.
 
         Args:
             model: A RobotMission instance
         """
-        super().__init__(model)
+        super().__init__(model, *args, **kwargs)
         self.rad_resistance = 1.0
         self.target_waste_type = "red"
 

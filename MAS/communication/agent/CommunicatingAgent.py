@@ -6,7 +6,7 @@ from communication.mailbox.Mailbox import Mailbox
 from communication.message.MessageService import MessageService
 
 
-class CommunicatingAgent:
+class CommunicatingAgent(Agent):
     """CommunicatingAgent class.
     Class implementing communicating agent in a generalized manner.
 
@@ -19,15 +19,13 @@ class CommunicatingAgent:
         message_service: The message service used to send and receive message (MessageService)
     """
 
-    # def __init__(self, model, unique_id):
-    #     """ Create a new communicating agent.
-    #     """
-    #     self.__name = unique_id
-    #     self.__mailbox = Mailbox()
-    #     self.__messages_service = MessageService.get_instance()
-    
-    def __init__(self, unique_id):
-        self.__name = unique_id
+    def __init__(self, model, name, is_prefix_name=False, *args, **kwargs):
+        """ Create a new communicating agent.
+        """
+        super().__init__(model, *args, **kwargs)
+        if is_prefix_name:
+            name += str(self.unique_id)
+        self.__name = name
         self.__mailbox = Mailbox()
         self.__messages_service = MessageService.get_instance()
 
