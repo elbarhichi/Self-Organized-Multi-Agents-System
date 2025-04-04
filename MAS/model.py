@@ -16,6 +16,8 @@ from agents.agents_base import RobotAgent, GreenRobot, YellowRobot, RedRobot
 from agents.agents_no_comm import GreenRobotNoComm, YellowRobotNoComm, RedRobotNoComm
 from agents.agents_with_comm import GreenRobotWithComm, YellowRobotWithComm, RedRobotWithComm
 
+from communication.message.MessageService import MessageService
+
 # Suppress FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -83,6 +85,9 @@ class RobotMission(mesa.Model):
             }
         
         self.reset()
+
+        self.message_service = MessageService(self)
+        self.message_service.set_instant_delivery(True)
     
     def reset(self) -> None:
         """Reset the model to its initial state."""
