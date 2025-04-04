@@ -218,19 +218,22 @@ class RobotMission(mesa.Model):
         self.disposal_zones.append(disposal_zone)
 
     def step(self) -> None:
-        """do one step of the model"""
+        if not self.running:
+            return
+        # 2. If this is step == 1, collect initial data
         if self.steps == 1:
-            # Initial state of the RobotMission
             self.datacollector.collect(self)
-
+        # 3. Let each robot do its action
         for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
-            action, *action_desc = agent.do() # Get robot decision
-            action_success = self.do(agent, action, *action_desc) # Apply action if feasible
-            agent.perceive_feedback(action_success) # Give feedback on action success
-        
+            action, *action_desc = agent.do()
+            action_success = self.do(agent, action, *action_desc)
+            agent.perceive_feedback(action_success)
+        # 4. Check if mission is complete
         if get_nb_wastes(self) == (0, 0, 0):
             self.is_cleaned = True
-        
+            # 5. Stop the model from running any further
+            self.running = False
+        # 6. Collect data at the end of the step
         self.datacollector.collect(self)
         
     def get_surroundings_perception(self, agent):
