@@ -153,14 +153,14 @@ class RobotMission(mesa.Model):
     def get_steps(self) -> int:
         return self.steps
       
-    def set_radioactivity(self, pos:tuple[int, int], radiactivity:Radioactivity) -> None:
+    def set_radioactivity(self, pos:tuple[int, int], radioactivity:Radioactivity) -> None:
         x, y = pos
-        i, j = y, self.height - 1 - x
-        self.rad_map[i, j] = radiactivity
+        i, j = self.height - 1 - y,  x
+        self.rad_map[i, j] = radioactivity
         
     def get_radioactivity(self, pos:tuple[int, int]) -> Radioactivity:
         x, y = pos
-        i, j = y, self.height - 1 - x
+        i, j = self.height - 1 - y,  x
         return self.rad_map[i, j]
     
     def get_nb_green_wastes(self) -> int:
@@ -233,14 +233,15 @@ class RobotMission(mesa.Model):
         
         for robot_agent in self.robot_agents:
             msg_exp = None
+            sep = '_'
             if isinstance(robot_agent, GreenRobot) and msg_group_exp == "green":
-                msg_exp = "GreenRobot" + str(robot_agent.unique_id)
+                msg_exp = "GreenRobot" + sep + str(robot_agent.unique_id)
             elif isinstance(robot_agent, YellowRobot) and msg_group_exp == "yellow":
-                msg_exp = "YellowRobot" + str(robot_agent.unique_id)
+                msg_exp = "YellowRobot" + sep + str(robot_agent.unique_id)
             elif isinstance(robot_agent, RedRobot) and msg_group_exp == "red":
-                msg_exp = "RedRobot" + str(robot_agent.unique_id)
+                msg_exp = "RedRobot" + sep + str(robot_agent.unique_id)
 
-            if msg_exp is not None:
+            if msg_exp is not None and msg_exp != msg_sender:
                 message = Message(msg_sender, msg_exp, msg_performative, msg_content)
                 self.__messages_service.send_message(message)
         

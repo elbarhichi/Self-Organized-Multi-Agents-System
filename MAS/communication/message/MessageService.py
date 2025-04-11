@@ -43,7 +43,6 @@ class MessageService:
     def send_message(self, message):
         """ Dispatch message if instant delivery active, otherwise add the message to proceed list.
         """
-        print(message)
         if self.__instant_delivery:
     
             self.dispatch_message(message)
@@ -55,8 +54,6 @@ class MessageService:
     def dispatch_message(self, message):
         """ Dispatch the message to the right agent.
         """
-       
-        
         self.find_agent_from_name(message.get_dest()).receive_message(message)
 
     def dispatch_messages(self):
@@ -71,7 +68,6 @@ class MessageService:
     def find_agent_from_name(self, agent_name):
         """ Return the agent according to the agent name given.
         """
-        
         for agent in self.__model.robot_agents:
         
             if agent.get_name() == agent_name:

@@ -24,7 +24,7 @@ class CommunicatingAgent(Agent):
         """
         super().__init__(model, *args, **kwargs)
         if is_prefix_name:
-            name += str(self.unique_id)
+            name += '_' + str(self.unique_id)
         self.__name = name
         self.__mailbox = Mailbox()
         self.__messages_service = MessageService.get_instance()

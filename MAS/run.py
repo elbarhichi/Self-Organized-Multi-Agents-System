@@ -7,6 +7,7 @@
 
 from objects import Radioactivity, WasteDisposalZone, WasteAgent
 from agents.agents_no_comm import GreenRobot, YellowRobot, RedRobot
+from agents.agents_with_comm import GreenRobotWithComm
 from model import RobotMission
 import seaborn as sns
 
@@ -54,3 +55,7 @@ print(model.steps)
 
 for robot in model.robot_agents:
     print('robot name :', robot.unique_id)
+    
+g_comm = GreenRobotWithComm(model)
+print('Test priority 1 :', g_comm.has_priority("GreenRobot_1"))
+print('Test priority 2 :', g_comm.has_priority("GreenRobot_845"))
