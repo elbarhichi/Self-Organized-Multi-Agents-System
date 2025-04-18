@@ -81,7 +81,15 @@ These components allow us to monitor key performance indicators and evaluate the
 
 ## 6. Robot Behavior Strategies
 
-### 6.1 No-Communication Strategy
+### 6.1 Agent Inheritance Structure
+---
+
+The diagram below shows the class inheritance structure of the robot agents.
+
+![Agent Inheritance Diagram](images/SMA_self_org_robots-ULM_with_comm.drawio.svg)
+
+
+### 6.2 No-Communication Strategy
 ---
 
 In this phase, the agents operate independently based on their local perceptions without inter-agent communication.
@@ -109,7 +117,7 @@ After this initial implementation, several enhancements were introduced to impro
 With these improvements, our simulation metrics showed significant enhancement, achieving a 100% termination rate even without communication between agents when running the simulations for infinite number of steps.
 
 
-### 6.2 Cooperative Strategy with Communication
+### 6.3 Cooperative Strategy with Communication
 ---
 
 In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
@@ -124,10 +132,10 @@ There are mainly three stages:
 2. **Proposal and Negotiation for Combination:** <br>
    Upon receiving a broadcast indicating that a robot is holding one waste and looking for a partner, another eligible robot (also holding one waste and not currently in a collaboration) responds by sending a `PROPOSE` message. The original sender can then respond with an `ACCEPT`, including its current position as the target location for combining. The following mechanisms are also implemented:
    
-   - **Timeout Mechanism** <br>
+   - **Timeout Mechanism:** <br>
      If no agreement is reached within a few steps, the negotiation is automatically canceled. This prevents robots from remaining idle due to stalled negotiations.
    
-   - **Tie-Breaking Rule** <br>
+   - **Tie-Breaking Rule:** <br>
      If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule is applied. The robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
 
    The two robots then synchronize their positions. One robot drops its waste at the target location, and the other moves there to pick it up. A combination then takes place. The newly combined waste is carried to the border and dropped.
@@ -183,12 +191,6 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 ### 7.2. Cooperative Strategy with Communication
 *Results for the Cooperative Strategy with Communication will be included here once the experiments are completed. Preliminary observations indicate improvements in task coordination, and detailed metrics will be added in subsequent updates.*
-
-
-
-### 7.3. Cooperative Strategy with Communication and Uncertainty Handling
-*Results for the Cooperative Strategy with Communication and Uncertainty Handling are currently under evaluation. We plan to measure the same key metrics (Average Score and Termination Rate) and compare them with the other strategies once the implementation is finalized.*
-
 
 
 ## 8. Running the simulations
