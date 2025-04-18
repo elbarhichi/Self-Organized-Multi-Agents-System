@@ -110,8 +110,26 @@ With these improvements, our simulation metrics showed significant enhancement, 
 
 
 ### Cooperative Strategy with Communication
+---
 
-### Cooperative Strategy with Communication and Uncertainty Handling
+In this phrase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. The strategy is built around three stages:
+
+1. **Broadcasting Pick-Up Intentions**
+   - When a robot (e.g., Green robot) successfully picks up a waste and holds exactly one, it broadcasts an `INFORM_REF` message to its group (e.g., all Green robots).
+   - This message signals that it is looking for a partner to combine with.
+
+2. **Proposal and Negotiation**
+   - Upon receiving this message, another eligible robot (holding one waste and not already in a collaboration) responds by sending a `PROPOSE` message.
+   - The original sender can then `ACCEPT` the proposal, including its current position as the target location for combining.
+   - A timeout mechanism ensures that if no agreement is reached within a few steps, the negotiation is canceled to avoid deadlocks.
+
+3. **Synchronized Waste Combination**
+   - The two robots synchronize their positions to either drop or pick up the waste at the agreed location.
+   - After a successful combination (e.g., two green wastes form a yellow), the resulting waste is carried to the border and dropped.
+   - The drop location is broadcast to the next group (e.g., Green robots inform Yellow robots) so that they can retrieve the new waste.
+
+This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
+
 
 ## 7. Model Evaluation & Results
 
