@@ -163,7 +163,7 @@ To assess the performance of our models, we run a fixed number of simulation ite
 - **Average Score (steps):** The average number of steps needed to finish the mission (computed only for converged cases).
 - **Termination Rate (%):** The percentage of simulation runs that successfully terminated within a predefined maximum number of steps. Each simulation is run for a maximum of `max_steps` steps, beyond which it is considered non-convergent.
 
-To evaluate the communication-based strategy, we also used the number of messages exchanged as a performance metric. Communication messages were categorized into two types:
+To evaluate the communication-based strategy, we also used the **number of messages exchanged** as a performance metric. Communication messages were categorized into two types:
 - `comm_1:` Messages exchanged between robots of the same type for negotiation and coordination in sharing a single waste item.
 - `comm_2:` Messages used to inform the next level of robots about the position of a newly combined waste item.
 
