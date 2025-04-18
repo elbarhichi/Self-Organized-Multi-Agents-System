@@ -2,56 +2,48 @@
 
 ## 1. Introduction
 
-This project aims to simulate the self-organization of heterogeneous robot agents assigned to handle hazardous waste in a radioactive environment. Each robot has specific capabilities and zone restrictions, and operates autonomously using agent-based modeling to perceive, reason, and act. The objective is to explore and evaluate three strategies: one without communication between agents, one with inter-agent communication, and a third that incorporates both communication and uncertainty.
+This project aims to simulate the self-organization of heterogeneous robot agents tasked with handling hazardous waste in a radioactive environment. Each robot has specific capabilities and zone restrictions, and operates autonomously using agent-based modeling to perceive, reason, and act. The objective is to explore and evaluate both the strategy without communication between agents and the strategy with communication.
 
 
-
-## 2. Project Overview
-
-The simulation models an environment divided into three zones (low, medium, and high radioactivity) where robots:
-- Collect and combine waste items (green, yellow, red).
-- Follow predefined rules based on their type.
-- Navigate a grid-based environment with adjustable parameters.
-- Use a modular approach allowing us to switch between different model configurations (e.g., with or without communication).
-
-
-
-## 3. Project Structure
+## 2. Git Structure
 
 - `MAS/`
    - `agents/` - Contains different versions of robot agent implementations.
    - `model.py` - Defines the RobotMission model, including environment setup, agent behavior, and waste management.
    - `objects.py` - Defines static elements, including waste items, radioactive zones, and disposal sites.
    - `actions.py` - Manages robot actions, including movement, waste pickup, combination, and disposal.
+   - `run.py` – A test script for manually running the simulation model, primarily used for debugging.
    - `server.py` - Handles real-time visualization and simulation monitoring.
 - `MAS_evaluation.ipynb` – Evaluates and compares the performance of different strategies.
 
 
+## 3. Simulation Parameters & Modes
+The simulation models an environment divided into three zones—low, medium, and high radioactivity—where robots:
 
-## 4. Simulation Parameters & Modes
-Our simulation is designed to be modular and highly configurable. The following parameters can be adjusted on the fly:
+- Collect and combine waste items (green, yellow, red)
+- Navigate a grid-based environment with customizable dimensions
+- Operate in either communication-enabled or communication-free configurations
+
+The system is designed to be modular and highly configurable. Users can adjust a wide range of parameters in real time through the simulation interface:
 
 ![Interface](images/interface.png)
 
-
 - **Environment Parameters:**
-  - **Grid Size:** (e.g., standard 12×8, large 24×16)
-  - **Radioactivity Levels:** Defined per zone (low, medium, high)
-  
+  - **Grid Size:** Adjustable (e.g., standard 12×8, large 24×16)
+  - **Radioactivity Levels:** Automatically defined for each zone (low, medium, high)
+
 - **Agent Parameters:**
-  - **Number & Types of Robots:** (e.g., Green:2, Yellow:2, Red:2 vs. smaller or larger teams)
-  - **Waste Quantities:** (e.g., Green:6, Yellow:3, Red:3 or different configurations)
-  
+  - **Number and Types of Robots:** Flexible configuration (e.g., Green: 2, Yellow: 2, Red: 2)
+  - **Waste Quantities:** Varying numbers of green, yellow, and red waste items
+
 - **Model Modes:**
-  - **No Communication:** Robots operate independently.
-  - **With Communication:** Robots share information to improve waste collection efficiency.
+  - **No Communication:** Robots act independently without sharing information
+  - **With Communication:** Robots exchange messages to coordinate and improve collection efficiency
 
-These parameters can be modified via the controls (sliders and dropdown menus) in the simulation’s interface (see [Visualization](Visualization) section).
-
-
+These parameters can be easily modified using the controls (sliders and dropdown menus) in the simulation’s interface (see the [Visualization](Visualization) section).
 
 
-## 5. Visualization
+## 4. Visualization
 Our simulation provides a real-time visual interface to observe the behavior of the agents and the results of the simulation. We visualize two key components : 
 
 - **Grid Visualization:** 
@@ -71,7 +63,6 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 
    ![Dashboard](images/dashboard.png)
 
-
    - **Simulation Steps:** A graph that dynamically displays the total number of steps taken during the simulation. This metric provides insight into the progression and speed of the simulation.
 
    - **Waste Distribution:** A graph that shows the real-time count of waste items by category (green, yellow, red). This visualization helps track how waste collection, transformation, and disposal evolve over time.
@@ -79,9 +70,17 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 These components allow us to monitor key performance indicators and evaluate the efficiency of the robot agents' behavior throughout the simulation.
 
 
-## Robot Behavior Strategies
+## 5. Robot Behavior Strategies
 
-### No-Communication Strategy
+### 5.1 Agent Inheritance Structure
+---
+
+The diagram below shows the class inheritance structure of the robot agents.
+
+![Agent Inheritance Diagram](images/SMA_self_org_robots-ULM_with_comm.drawio.svg)
+
+
+### 5.2 No-Communication Strategy
 ---
 
 In this phase, the agents operate independently based on their local perceptions without inter-agent communication.
@@ -109,11 +108,36 @@ After this initial implementation, several enhancements were introduced to impro
 With these improvements, our simulation metrics showed significant enhancement, achieving a 100% termination rate even without communication between agents when running the simulations for infinite number of steps.
 
 
-### Cooperative Strategy with Communication
+### 5.3 Cooperative Strategy with Communication
+---
 
-### Cooperative Strategy with Communication and Uncertainty Handling
+In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
 
-## 7. Model Evaluation & Results
+![Green-Green interaction Diagram](images/SMA_self_org_robots-seq_diag.drawio.svg)
+
+There are mainly three stages:
+
+1. **Broadcasting Pick-Up Intentions:** <br>
+   When a robot (e.g., Green robot) successfully picks up a waste and holds exactly one, it broadcasts an `INFORM_REF` message to its group (e.g., all Green robots). This message signals that it is looking for a partner to combine with.
+
+2. **Proposal and Negotiation for Combination:** <br>
+   Upon receiving a broadcast indicating that a robot is holding one waste and looking for a partner, another eligible robot (also holding one waste and not currently in a collaboration) responds by sending a `PROPOSE` message. The original sender can then respond with an `ACCEPT`, including its current position as the target location for combining. The following mechanisms are also implemented:
+   
+   - **Timeout Mechanism:** <br>
+     If no agreement is reached within a few steps, the negotiation is automatically canceled. This prevents robots from remaining idle due to stalled negotiations.
+   
+   - **Tie-Breaking Rule:** <br>
+     If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule is applied. The robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
+
+   The two robots then synchronize their positions. One robot drops its waste at the target location, and the other moves there to pick it up. A combination then takes place. The newly combined waste is carried to the border and dropped.
+
+3. **Informing the Next Group:** <br>
+   After dropping the combined waste at the border between zones, the robot broadcasts the drop location to the next level of robots (e.g., Green robots inform Yellow robots about a new yellow waste). The receiving robots update their knowledge with the new waste location, allowing them to continue the mission efficiently.
+
+This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
+
+
+## 6. Model Evaluation & Results
 
 ### Evaluation Protocol
 To assess the performance of our models, we run a fixed number of simulation iterations (`N`) for each configuration. For every configuration, we measure two key metrics:
@@ -131,7 +155,7 @@ The following table summarizes the parameters used across all evaluations:
 
 ---
 
-### 7.1. No Communication Strategy
+### 6.1. No Communication Strategy
 
 #### Initial Evaluation (Before Handling Divergent Cases)
 | Model Configuration | Average Score (steps) | Termination Rate (%) |
@@ -156,17 +180,11 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 
 
-### 7.2. Cooperative Strategy with Communication
+### 6.2. Cooperative Strategy with Communication
 *Results for the Cooperative Strategy with Communication will be included here once the experiments are completed. Preliminary observations indicate improvements in task coordination, and detailed metrics will be added in subsequent updates.*
 
 
-
-### 7.3. Cooperative Strategy with Communication and Uncertainty Handling
-*Results for the Cooperative Strategy with Communication and Uncertainty Handling are currently under evaluation. We plan to measure the same key metrics (Average Score and Termination Rate) and compare them with the other strategies once the implementation is finalized.*
-
-
-
-## 8. Running the simulations
+## 7. Running the simulations
 
 1. Clone the repository  
    ```sh
