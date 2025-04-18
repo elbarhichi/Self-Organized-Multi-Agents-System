@@ -21,6 +21,7 @@ class GreenRobotNoComm(GreenRobot):
         """
         super().__init__(model)
         self.max_hold_steps = 30        # N steps before dropping
+        # self.max_hold_steps = 100000        # N steps before dropping
         self.drop_cooldown = 15         # Steps to avoid re-picking a dropped waste
         
     def percepts(self):
