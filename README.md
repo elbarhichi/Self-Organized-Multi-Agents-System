@@ -112,18 +112,28 @@ With these improvements, our simulation metrics showed significant enhancement, 
 ### 6.2 Cooperative Strategy with Communication
 ---
 
-In this phrase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. The strategy is built around three stages:
+### 6.2 Cooperative Strategy with Communication
+---
+
+In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
+
+![Green-Green interaction Diagram](images/SMA_self_org_robots-seq_diag.drawio.svg)
+
+There are mainly three stages:
 
 1. **Broadcasting Pick-Up Intentions:** <br>
    When a robot (e.g., Green robot) successfully picks up a waste and holds exactly one, it broadcasts an `INFORM_REF` message to its group (e.g., all Green robots). This message signals that it is looking for a partner to combine with.
 
-2. **Proposal and Negotiation:** <br>
-   Upon receiving this message, another eligible robot (holding one waste and not already in a collaboration) responds by sending a `PROPOSE` message. The original sender can then `ACCEPT` the proposal, including its current position as the target location for combining.
-   - A timeout mechanism ensures that if no agreement is reached within a few steps, the negotiation is canceled to avoid deadlocks.
-   - If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule applies: the robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
+2. **Proposal and Negotiation for Combination:** <br>
+   Upon receiving a broadcast indicating that a robot is holding one waste and looking for a partner, another eligible robot (also holding one waste and not currently in a collaboration) responds by sending a `PROPOSE` message. The original sender can then respond with an `ACCEPT`, including its current position as the target location for combining.
+   
+   - A timeout mechanism ensures that if no agreement is reached within a few steps, the negotiation is canceled to prevent deadlocks.
+   - If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule is applied: the robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
 
-3. **Synchronized Waste Combination:** <br>
-   The two robots synchronize their positions to either drop or pick up the waste at the agreed location. After a successful combination (e.g., two green wastes form a yellow), the resulting waste is carried to the border and dropped. The drop location is broadcast to the next group (e.g., Green robots inform Yellow robots) so that they can retrieve the new waste.
+   The two robots then synchronize their positions. One robot drops its waste at the target location, and the other moves there to pick it up. A combination then takes place. The newly combined waste is carried to the border and dropped.
+
+3. **Informing the Next Group:** <br>
+   After dropping the combined waste at the border between zones, the robot broadcasts the drop location to the next level of robots (e.g., Green robots inform Yellow robots about a new yellow waste). The receiving robots update their knowledge with the new waste location, allowing them to continue the mission efficiently.
 
 This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
 
