@@ -110,7 +110,6 @@ class GreenRobotWithComm(GreenRobot, CommunicatingRobot):
                 waste_type = last_action_desc[0]
                 if waste_type == "yellow":
                     # Communicate yellow waste pos to all YellowRobot agents
-                    # pass # TODO : DELETE
                     self.knowledge['msgs_to_broadcast'].append((MessagePerformative.INFORM_REF, "yellow", self.pos))
                     
             elif last_action == "pick_up":
@@ -304,7 +303,6 @@ class YellowRobotWithComm(YellowRobot, CommunicatingRobot):
                 waste_type = last_action_desc[0]
                 if waste_type == "red":
                     # Communicate red waste pos to all YellowRobot agents
-                    # pass # TODO : DELETE
                     self.knowledge['msgs_to_broadcast'].append((MessagePerformative.INFORM_REF, "red", self.pos))
                     
             elif last_action == "pick_up":
