@@ -74,7 +74,8 @@ class GreenRobotNoComm(GreenRobot):
         # DEBUG
         # print(self, self.collected_wastes, self.knowledge["collected_wastes"], any(waste.waste_type == "yellow" for waste in self.knowledge["collected_wastes"]))
         
-        if sum(waste_type == "green" for waste_type in self.knowledge["collected_wastes"]) >= 2:
+        # Combine if holding 2 green wastes
+        if self.get_nb_target_waste_held() >= 2:
             return "combine_wastes", "green", "green"
         
         # Drop uncombined waste if held too long and at border or origin
@@ -101,7 +102,7 @@ class GreenRobotNoComm(GreenRobot):
         
         # Look for wastes to pick up (ignoring recently dropped)
         target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'green' for waste_type in content['wastes'])
-                             and (not current_pos in self.knowledge["recent_drop_pos"])]
+                             and (not pos in self.knowledge["recent_drop_pos"])]
         
         # Move to the closest waste seen
         if len(target_wastes_pos) > 0:
@@ -181,12 +182,12 @@ class YellowRobotNoComm(YellowRobot):
         # DEBUG
         # print(self, self.collected_wastes, self.knowledge["collected_wastes"], any(waste.waste_type == "red" for waste in self.knowledge["collected_wastes"]))
         
-        # Combine if holding 2 yellow
-        if sum(waste_type == "yellow" for waste_type in self.knowledge["collected_wastes"]) >= 2:
+        # Combine if holding 2 yellow wastes
+        if self.get_nb_target_waste_held() >= 2:
             return "combine_wastes", "yellow", "yellow"
         
         # Drop uncombined waste if held too long and at border or origin
-        border_x = (self.knowledge["grid_width"] // 3) * 2 - 1
+        border_x = 2 * self.knowledge["grid_width"] // 3 - 1
         for waste_type in self.knowledge["collected_wastes"]:
             if waste_type == "yellow" and self.knowledge["hold_timer"][waste_type] > self.max_hold_steps:
                 at_border = current_pos[0] == border_x
@@ -201,7 +202,7 @@ class YellowRobotNoComm(YellowRobot):
         
         # Drop combined_waste (red) at zone border
         if any(waste_type == "red" for waste_type in self.knowledge["collected_wastes"]):
-            if current_pos[0] == (self.knowledge["grid_width"] // 3) * 2 - 1:
+            if current_pos[0] == 2 * self.knowledge["grid_width"] // 3 - 1:
                 return "drop", "red"
             # Move to the border
             else:
@@ -209,7 +210,7 @@ class YellowRobotNoComm(YellowRobot):
             
         # Look for yellow wastes to pick up (ignoring recently dropped)
         target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'yellow' for waste_type in content['wastes'])
-                             and (not current_pos in self.knowledge["recent_drop_pos"])]
+                             and (not pos in self.knowledge["recent_drop_pos"])]
 
         # Move to the closest waste seen
         if len(target_wastes_pos) > 0:
@@ -270,7 +271,7 @@ class RedRobotNoComm(RedRobot):
             move_direction = self.dir_to_target(closest_waste_pos)
             return "move", move_direction
         
-        x_min = self.knowledge["grid_width"] // 3 * 2 - 1
+        x_min = 2 * self.knowledge["grid_width"] // 3 - 1
         x_max = self.knowledge["grid_width"] - 2
         
         # If no waste seen:

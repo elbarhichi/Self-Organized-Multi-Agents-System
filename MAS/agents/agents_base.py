@@ -81,6 +81,9 @@ class RobotAgent(mesa.Agent):
         # Keep track of actions taken
         self.knowledge["last_action"] = (action, *action_desc)
         return action, *action_desc
+
+    def get_nb_target_waste_held(self) -> int:
+        return sum(w == self.target_waste_type for w in self.knowledge["collected_wastes"])
     
     def dir_to_target(self, target:tuple[int, int]) -> str:
         # Return the direction leading to the target
