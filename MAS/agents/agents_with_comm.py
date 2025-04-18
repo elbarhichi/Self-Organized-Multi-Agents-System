@@ -440,9 +440,10 @@ class YellowRobotWithComm(YellowRobot, CommunicatingRobot):
         if self.get_nb_target_waste_held() >= 2:
             return "combine_wastes", "yellow", "yellow"
        
-        can_get_yellow_waste = any(waste_type == 'yellow' for waste_type in perceptions[current_pos]['wastes'])
-        if can_get_yellow_waste and len(self.knowledge["collected_wastes"]) < 2:
-            return "pick_up", "yellow"
+        if not current_pos in self.knowledge['pos_given_waste']: # Avoid picking up waste shared with other robots
+            can_get_yellow_waste = any(waste_type == 'yellow' for waste_type in perceptions[current_pos]['wastes'])
+            if can_get_yellow_waste and len(self.knowledge["collected_wastes"]) < 2:
+                return "pick_up", "yellow"
         
         # Drop combined_waste (red) at zone border
         if any(waste_type == "red" for waste_type in self.knowledge["collected_wastes"]):
@@ -451,9 +452,10 @@ class YellowRobotWithComm(YellowRobot, CommunicatingRobot):
             # Move to the border
             else:
                 return "move", "E"
-            
+                   
         # Look for wastes to pick up
-        target_wastes_pos = [pos for pos, content in perceptions.items() if any(waste_type == 'yellow' for waste_type in content['wastes'])]
+        target_wastes_pos = [pos for pos, content in perceptions.items()
+                             if any(waste_type == 'yellow' for waste_type in content['wastes']) and pos not in self.knowledge['pos_given_waste']]
         
         # Move to the closest waste seen
         if len(target_wastes_pos) > 0:

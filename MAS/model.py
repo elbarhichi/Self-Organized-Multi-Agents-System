@@ -97,7 +97,10 @@ class RobotMission(mesa.Model):
         self.datacollector = mesa.DataCollector(model_reporters={"Nb_green_wastes": self.get_nb_green_wastes,
                                                                  "Nb_yellow_wastes": self.get_nb_yellow_wastes,
                                                                  "Nb_red_wastes": self.get_nb_red_wastess,
-                                                                 "Nb_total_wastes": self.get_nb_total_wastes,})
+                                                                 "Nb_total_wastes": self.get_nb_total_wastes,
+                                                                 "Total_nb_msgs_sent": self.get_nb_sent_msgs,
+                                                                 "Total_nb_msgs_sent_comm_1": self.get_nb_sent_msgs_comm_1,
+                                                                 "Total_nb_msgs_sent_comm_2": self.get_nb_sent_msgs_comm_2})
         
         self.is_cleaned = False
         self.robot_agents = [] # list of RobotAgents that interact in the RobotMission
@@ -106,7 +109,44 @@ class RobotMission(mesa.Model):
         self.rad_map = np.full((self.height, self.width), None, dtype=Radioactivity) # grid of Radiactivity objects
         
         # Create messages service
-        self.__messages_service = MessageService(self)
+        class CustomMessageService(MessageService):
+            # Custuom MessageService class to override the dispatch_message method and count the  messages sent
+            def __init__(self, model):
+                super().__init__(model=model, instant_delivery=False)
+                self.nb_msg_sent_comm_1 = 0 # nb of msg sent by the robots for the negociating and sharing 1 waste among same robot type protocol
+                self.nb_msg_sent_comm_2 = 0 # nb of msg sent by the robots for the informing next robot type of combined waste posiion protocol
+                
+            def get_nb_msg_sent_comm_1(self) -> int:
+                return self.nb_msg_sent_comm_1
+            
+            def get_nb_msg_sent_comm_2(self) -> int:
+                return self.nb_msg_sent_comm_2
+            
+            def get_nb_msg_sent(self) -> int:
+                return self.nb_msg_sent_comm_1 + self.nb_msg_sent_comm_2
+            
+            def dispatch_message(self, message):
+                msg_exp = message.get_exp()
+                msg_dest = message.get_dest()
+                
+                # DEBUG
+                # msg_performative = message.get_performative()
+                # msg_content = message.get_content()
+                # print(f"{msg_performative} | {msg_exp} -> {msg_dest} : {msg_content}")
+                
+                if "Green" in msg_exp and "Green" in msg_dest:
+                    self.nb_msg_sent_comm_1 += 1
+                elif "Yellow" in msg_exp and "Yellow" in msg_dest:
+                    self.nb_msg_sent_comm_1 += 1
+                elif "Red" in msg_exp and "Red" in msg_dest:
+                    self.nb_msg_sent_comm_1 += 1
+                else:
+                    # If the msg sent is not for the same robot type, count it as a msg sent 
+                    # for the informing next robot type of combined waste position protocol
+                    self.nb_msg_sent_comm_2 += 1
+                super().dispatch_message(message)
+
+        self.__messages_service = CustomMessageService(self)
         self.__messages_service.set_instant_delivery(False)
         self.running = True
         
@@ -174,6 +214,15 @@ class RobotMission(mesa.Model):
 
     def get_nb_total_wastes(self) -> int:
         return self.get_nb_green_wastes() + self.get_nb_yellow_wastes() + self.get_nb_red_wastess()
+    
+    def get_nb_sent_msgs(self) -> int:
+        return self.__messages_service.get_nb_msg_sent()
+    
+    def get_nb_sent_msgs_comm_1(self) -> int:
+        return self.__messages_service.get_nb_msg_sent_comm_1()
+    
+    def get_nb_sent_msgs_comm_2(self) -> int:
+        return self.__messages_service.get_nb_msg_sent_comm_2()
       
     def fill_radioactivity(self, zone_type:str, x_min:int, x_max:int, y_min:int, y_max:int) -> None:
         """Fill each of tiles in RobotMission grid[x_min:x_max + 1, y_min:y_max + 1] with RadioactivityAgents.
@@ -360,12 +409,12 @@ class RobotMission(mesa.Model):
         if not self.running:
             return
         
+        # Perform message dispatching
+        self.__messages_service.dispatch_messages()
+        
         if self.steps == 1:
             # Initial state of the RobotMission
             self.datacollector.collect(self)
-            
-        # Perform message dispatching
-        self.__messages_service.dispatch_messages()
 
         for agent in self.random.sample(self.robot_agents, len(self.robot_agents)):
             action, *action_desc = agent.do() # Get robot decision
@@ -377,3 +426,8 @@ class RobotMission(mesa.Model):
             self.running = False
         
         self.datacollector.collect(self)
+        # DEBUG
+        # print('Step ',self.steps, 'completed.')
+        # # print('Total nb of msg sent : ', self.get_nb_sent_msgs())
+        # # print('Total nb of msg sent comm_1 : ', self.get_nb_sent_msgs_comm_1())
+        # # print('Total nb of msg sent comm_2 : ', self.get_nb_sent_msgs_comm_2())
