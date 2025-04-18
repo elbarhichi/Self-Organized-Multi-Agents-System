@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This project aims to simulate the self-organization of heterogeneous robot agents assigned to handle hazardous waste in a radioactive environment. Each robot has specific capabilities and zone restrictions, and operates autonomously using agent-based modeling to perceive, reason, and act. The objective is to explore and evaluate three strategies: one without communication between agents, one with inter-agent communication, and a third that incorporates both communication and uncertainty.
+This project aims to simulate the self-organization of heterogeneous robot agents assigned to handle hazardous waste in a radioactive environment. Each robot has specific capabilities and zone restrictions, and operates autonomously using agent-based modeling to perceive, reason, and act. The objective is to explore and evaluate the strategy without communication between agents and the strategy with communication.
 
 
 
@@ -112,9 +112,6 @@ With these improvements, our simulation metrics showed significant enhancement, 
 ### 6.2 Cooperative Strategy with Communication
 ---
 
-### 6.2 Cooperative Strategy with Communication
----
-
 In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
 
 ![Green-Green interaction Diagram](images/SMA_self_org_robots-seq_diag.drawio.svg)
@@ -125,10 +122,13 @@ There are mainly three stages:
    When a robot (e.g., Green robot) successfully picks up a waste and holds exactly one, it broadcasts an `INFORM_REF` message to its group (e.g., all Green robots). This message signals that it is looking for a partner to combine with.
 
 2. **Proposal and Negotiation for Combination:** <br>
-   Upon receiving a broadcast indicating that a robot is holding one waste and looking for a partner, another eligible robot (also holding one waste and not currently in a collaboration) responds by sending a `PROPOSE` message. The original sender can then respond with an `ACCEPT`, including its current position as the target location for combining.
+   Upon receiving a broadcast indicating that a robot is holding one waste and looking for a partner, another eligible robot (also holding one waste and not currently in a collaboration) responds by sending a `PROPOSE` message. The original sender can then respond with an `ACCEPT`, including its current position as the target location for combining. The following mechanisms are also implemented:
    
-   - A timeout mechanism ensures that if no agreement is reached within a few steps, the negotiation is canceled to prevent deadlocks.
-   - If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule is applied: the robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
+   - **Timeout Mechanism** <br>
+     If no agreement is reached within a few steps, the negotiation is automatically canceled. This prevents robots from remaining idle due to stalled negotiations.
+   
+   - **Tie-Breaking Rule** <br>
+     If two robots send `PROPOSE` messages to each other at the same step, a tie-breaking rule is applied. The robot with the **lower numeric ID** (e.g., `GreenRobot_1` vs. `GreenRobot_2`) has priority and sends the `ACCEPT`, while the other waits.
 
    The two robots then synchronize their positions. One robot drops its waste at the target location, and the other moves there to pick it up. A combination then takes place. The newly combined waste is carried to the border and dropped.
 
