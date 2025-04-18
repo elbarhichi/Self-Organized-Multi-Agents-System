@@ -79,9 +79,9 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 These components allow us to monitor key performance indicators and evaluate the efficiency of the robot agents' behavior throughout the simulation.
 
 
-## Robot Behavior Strategies
+## 6. Robot Behavior Strategies
 
-### No-Communication Strategy
+### 6.1 No-Communication Strategy
 ---
 
 In this phase, the agents operate independently based on their local perceptions without inter-agent communication.
@@ -109,7 +109,7 @@ After this initial implementation, several enhancements were introduced to impro
 With these improvements, our simulation metrics showed significant enhancement, achieving a 100% termination rate even without communication between agents when running the simulations for infinite number of steps.
 
 
-### Cooperative Strategy with Communication
+### 6.2 Cooperative Strategy with Communication
 ---
 
 In this phrase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. The strategy is built around three stages:
