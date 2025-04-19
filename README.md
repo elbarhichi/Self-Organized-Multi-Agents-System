@@ -286,7 +286,12 @@ After adding both layers of messaging, everything tightened up instantly. Our ne
 ### 8.2. Summary Metrics
 Next, we tabulated the core statistics—mean steps, termination rate, and (for communication runs) average message counts—so we could compare side by side.
 
-![Average steps, termination rates, avg comm₁ and avg comm₂ for each model & scenario](images/summary.png)
+<div style="flex: 1; text-align: center;">
+    <img src="images/summary.png" alt="Average steps, termination rates, avg comm₁ and avg comm₂ for each model & scenario" style="max-width: 100%; height: auto;" />
+  </div>
+
+
+
 
 **Key takeaways:**
 
@@ -304,11 +309,10 @@ To visualize these differences more clearly, we plot each metric across the four
 <div style="display: flex; gap: 1rem; align-items: flex-start;">
   <div style="flex: 1; text-align: center;">
     <img src="images/average1.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
-    <p><em>Average steps (only counting terminated runs)</em></p>
+   
   </div>
   <div style="flex: 1; text-align: center;">
     <img src="images/average2.png" alt="Termination rate (%) for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
-    <p><em>Termination rate (%)</em></p>
   </div>
 </div>
 
@@ -321,7 +325,7 @@ To highlight how each enhancement builds on the previous one, we computed the pe
 #### Model 1 (1 × Green, 1 × Yellow, 1 × Red, 12 wastes):
 
 <div style="flex: 1; text-align: center;">
-    <img src="images/improve1.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+    <img src="images/improve1.png" alt="model1" style="max-width: 100%; height: auto;" />
       </div>
 
 - Drop mech. (no_comm_drop) trades about 36 % fewer successful‐run steps for a 62 % jump in termination rate—rescuing many previously stuck simulations.
@@ -333,7 +337,7 @@ To highlight how each enhancement builds on the previous one, we computed the pe
 #### Model 2 (1 × Green, 1 × Yellow, 1 × Red, 12 wastes):
 
   <div style="flex: 1; text-align: center;">
-    <img src="images/improve2.png" alt="Termination rate (%) for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+    <img src="images/improve2.png" alt="model2" style="max-width: 100%; height: auto;" />
   </div>
 
 
@@ -344,7 +348,7 @@ To highlight how each enhancement builds on the previous one, we computed the pe
 #### Model 3 (large 24 × 16 grid, 4 of each robot, 22 wastes):
 
   <div style="flex: 1; text-align: center;">
-    <img src="images/improve3.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+    <img src="images/improve3.png" alt="model3" style="max-width: 100%; height: auto;" />
   </div>
 
 
@@ -361,7 +365,7 @@ To highlight how each enhancement builds on the previous one, we computed the pe
 
 Finally, to weigh the cost of extra messaging against the benefit of saved steps, we computed a global efficiency for **comm_1** and **comm_2** across all three models:
 
-$$
+\[
 \text{efficiency}_c \;=\; 
 \frac{\displaystyle \sum_{i=1}^{3} \bigl(\text{steps}^{\text{no\_comm\_no\_drop}}_{i} \;-\;\text{steps}^{c}_{i}\bigr)}
 {\displaystyle \sum_{i=1}^{3} \text{msgs}^{c}_{i}}
@@ -369,7 +373,7 @@ $$
 
 \text{for}\quad
 c \in \{\text{comm}_1,\,\text{comm}_2\}.
-$$
+\]
 
 
 The table below summarizes per‑model savings and efficiencies:
