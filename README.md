@@ -17,7 +17,7 @@ This project aims to simulate the self-organization of heterogeneous robot agent
 - `MAS_evaluation.ipynb` – Evaluates and compares the performance of different strategies.
 
 
-## 3. Running the simulations
+## 3. Running the Simulation
 
 1. Clone the repository  
    ```sh
