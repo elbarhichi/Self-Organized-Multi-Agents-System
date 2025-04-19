@@ -12,13 +12,34 @@ This project aims to simulate the self-organization of heterogeneous robot agent
    - `model.py` - Defines the RobotMission model, including environment setup, agent behavior, and waste management.
    - `objects.py` - Defines static elements, including waste items, radioactive zones, and disposal sites.
    - `actions.py` - Manages robot actions, including movement, waste pickup, combination, and disposal.
-   - `run.py` – A test script for manually running the simulation model, primarily used for debugging.
+   - `test.py` – A test script for manually running the simulation model, primarily used for debugging.
    - `server.py` - Handles real-time visualization and simulation monitoring.
-- `MAS_evaluation.ipynb` – Evaluates and compares the performance of different strategies.
+- `MAS_evaluation.ipynb` – Evaluates the performance of different strategies.
+- `MAS_results_analysis.ipynb` – Analyses the results and compares the performance of different strategies.
 - `benchmarks/` - Contains different variations of evaluation results as csv files.
 
 
-## 3. Simulation Parameters & Modes
+## 3. Running the Simulation
+
+1. Clone the repository  
+   ```sh
+   git clone https://gitlab-student.centralesupelec.fr/marius.nadalin/mas_self_org_robots_in_host_env.git
+   cd mas_self_org_robots_in_host_env
+
+2. Install dependencies  
+   ```sh
+   pip install -r requirements.txt
+
+3. Run the server
+   ```sh
+   solara run MAS/server.py
+
+**Notes:**
+- Adjust simulation parameters (number of robots, waste quantities, grid size, and model mode) via the provided configuration options or GUI controls.
+- To run the evaluation notebook, open `MAS_evaluation.ipynb` and follow the instructions.
+
+
+## 4. Simulation Parameters & Modes
 The simulation models an environment divided into three zones—low, medium, and high radioactivity—where robots:
 
 - Collect and combine waste items (green, yellow, red)
@@ -44,7 +65,7 @@ The system is designed to be modular and highly configurable. Users can adjust a
 These parameters can be easily modified using the controls (sliders and dropdown menus) in the simulation’s interface (see the [Visualization](Visualization) section).
 
 
-## 4. Visualization
+## 5. Visualization
 Our simulation provides a real-time visual interface to observe the behavior of the agents and the results of the simulation. We visualize two key components : 
 
 - **Grid Visualization:** 
@@ -74,9 +95,9 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 
    ![COMMUNICATION](images/communication.png)
  
-   - **Communication 1 (comm1):** A graph that shows the real time count of Intra‑team messages per step—messages exchanged between robots of the same color to coordinate locally.
+   - **Communication 1 (comm_1):** A graph that shows the real time count of Intra‑team messages per step—messages exchanged between robots of the same color to coordinate locally.
   
-   - **Communication 2 (comm2)** A graph that shows the real time count of Inter‑tier (comm2) handoff notifications per step—messages sent from one robot tier (e.g. green) to the next (e.g. yellow) when a waste item is combined and droped.
+   - **Communication 2 (comm_2)** A graph that shows the real time count of Inter‑tier (comm2) handoff notifications per step—messages sent from one robot tier (e.g. green) to the next (e.g. yellow) when a waste item is combined and droped.
 
    These communication graphs reveal both intra‑team coordination efforts and the inter‑tier handoff notifications that underpin the end‑to‑end waste transfer pipeline.
 
@@ -84,18 +105,18 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 These components allow us to monitor key performance indicators and evaluate the efficiency of the robot agents' behavior throughout the simulation.
 
 
-## 5. Robot Behavior Strategies
+## 6. Robot Behavior Strategies
 
-### 5.1 Agent Inheritance Structure
----
+### 6.1. Agent Inheritance Structure
+
 
 The diagram below shows the class inheritance structure of the robot agents.
 
 ![Agent Inheritance Diagram](images/SMA_self_org_robots-ULM_with_comm.drawio.svg)
 
 
-### 5.2 No-Communication Strategy
----
+### 6.2. No-Communication Strategy
+
 
 In this phase, the agents operate independently based on their local perceptions without inter-agent communication.
 
@@ -122,8 +143,8 @@ After this initial implementation, several enhancements were introduced to impro
 With these improvements, our simulation metrics showed significant enhancement, achieving a 100% termination rate even without communication between agents when running the simulations for infinite number of steps.
 
 
-### 5.3 Cooperative Strategy with Communication
----
+### 6.3. Cooperative Strategy with Communication
+
 
 In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
 
@@ -151,44 +172,38 @@ There are mainly three stages:
 This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
 
 
-## 6. Model Evaluation & Results
+## 7. Model Evaluation & Results
 
-### Evaluation Protocol
+### 7.1. Evaluation Protocol
 To assess the performance of our models, we run a fixed number of simulation iterations (`N`) for each configuration. For every configuration, we measure two key metrics:
 - **Average Score (steps):** The average number of steps needed to finish the mission (computed only for converged cases).
 - **Termination Rate (%):** The percentage of simulation runs that successfully terminated within a predefined maximum number of steps. Each simulation is run for a maximum of `max_steps` steps, beyond which it is considered non-convergent.
 
-Additionally, for the simulations that uses communication protocol, we record two further metrics:
+Additionally, To evaluate the communication-based strategy, we also used the **number of exchanged messages** as a performance metric. Communication messages were categorized into two types:
 
-- **Comm 1 Messages Sent:** The average number of intra‑team (COM1) messages dispatched per run—that is, messages exchanged between robots of the same color to coordinate local waste collection.  
-- **Comm 2 Messages Sent:** The average number of inter‑tier (COM2) handoff notifications dispatched per run—i.e., messages sent from one robot tier (green → yellow or yellow → red) when transferring combined waste across zones.  
-
-
+- **comm_1:** The average number of intra‑team messages dispatched per run — that is, messages exchanged between robots of the same color for negotiation and coordination in sharing a single waste item.
+- **comm_2:** The average number of inter‑tier handoff notifications dispatched per run — i.e., messages sent from one robot tier to the next tier (green → yellow or yellow → red) when transferring combined waste across zones.  
 
 
-
-
-
-
-### Evaluation Parameters
+### 7.2. Evaluation Parameters
 The following table summarizes the parameters used across all evaluations:
 
 | Model      | Grid Size | Robot Composition         | Waste Composition         | N (simulations) | max_steps |
 |-----------|-----------|---------------------------|---------------------------|-----------------|-----------|
 | **Model 1** | 12×8      | 6 Robots (G:2, Y:2, R:2)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
 | **Model 2** | 12×8      | 3 Robots (G:1, Y:1, R:1)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
-| **Model 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 24 Wastes (G:10, Y:9, R:5) | 100           | 1000 |
+| **Model 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 22 Wastes (G:10, Y:7, R:5) | 100           | 1000 |
 
 ---
 
-### 6.1. No Communication Strategy
+### 7.3. No Communication Strategy Results
 
 #### Initial Evaluation (Before Handling Divergent Cases)
 | Model Configuration | Average Score (steps) | Termination Rate (%) |
 |---------------------|-----------------------|----------------------|
-| **Model 1**        | 59.03                  | 36.00%                |
-| **Model 2**        | 101.15                | 100.00               |
-| **Model 3**        | 153.00                | 6.00%                 |
+| **Model 1**        | 85.04                  | 61.2%                |
+| **Model 2**        | 101.37                | 100.00               |
+| **Model 3**        | 351.23                | 16.3%                 |
 
 
 *Note: Divergent cases occurred when matching wastes were held by different robots, preventing mission termination.*
@@ -196,9 +211,9 @@ The following table summarizes the parameters used across all evaluations:
 #### Updated Evaluation (After Implementing Drop Mechanism)
 | Model Configuration   | Average Score (steps) | Termination Rate (%) |
 |--------|-----------------------|----------------------|
-| **Model 1**  | 103.02                 | 95.00%               |
-| **Model 2**  | 95.27                 | 100.00               |
-| **Model 3**  | 393.65                | 88.00%               |
+| **Model 1**  | 115.26                 | 100.00%               |
+| **Model 2**  | 95.27                 | 100.00%               |
+| **Model 3**  | 393.65                | 80.80%               |
 
 The introduction of the drop mechanism significantly improved the termination rate by addressing various non-convergent cases.
 
@@ -206,33 +221,184 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 
 
-### 6.2. Cooperative Strategy with Communication
-*Results for the Cooperative Strategy with Communication will be included here once the experiments are completed. Preliminary observations indicate improvements in task coordination, and detailed metrics will be added in subsequent updates.*
+### 7.4. Cooperative Strategy with Communication Results
+
+#### Intra‑Team Communication Only (comm_1)
+
+| Model Configuration | Average Score (steps) | Termination Rate (%) | Avg comm_1 Messages | Avg comm_2 Messages |
+|---------------------|-----------------------|----------------------|-------------------|-------------------|
+| **Model 1**         |  67.16                | 100.00%              | 21.89             | 0.00              |
+| **Model 2**         |  99.41                | 100.00%              | 0.00              | 0.00              |
+| **Model 3**         | 164.70                | 100.00%              | 131.49            | 0.00              |
+
+*Note: robots share intra‑team negotiation messages; there are no cross‑tier handoff broadcasts in this mode.*
+
+#### Full Communication (Intra‑team (comm_1) + Inter‑tier (comm_2))
+
+| Model Configuration | Average Score (steps) | Termination Rate (%) | Avg COM1 Messages | Avg COM2 Messages |
+|---------------------|-----------------------|----------------------|-------------------|-------------------|
+| **Model 1**         |  53.75                | 100.00%              | 21.39             | 12.00             |
+| **Model 2**         |  69.90                | 100.00%              | 0.00              | 6.00              |
+| **Model 3**         | 125.80                | 100.00%              | 133.53            | 44.00             |
+
+The introduction of the communication mechanism overall improved the termination rate by addressing various non-convergent cases to a 100% termination rate.
 
 
-## 7. Running the simulations
+## 8. Results Analysis
+For a deeper dive into all of the charts, code and interactive plots, take a look at `MAS_results_analysis.ipynb` notebook.
 
-1. Clone the repository  
-   ```sh
-   git clone https://gitlab-student.centralesupelec.fr/marius.nadalin/mas_self_org_robots_in_host_env.git
-   cd mas_self_org_robots_in_host_env
+### 8.1. Score Distributions
+To begin, we plotted the distribution of mission‐completion steps for each model–scenario pair. This lets us see at a glance how “tight” or “wide” the performance spread is, and whether outliers dominate any configuration.
 
-2. Install dependencies  
-   ```sh
-   pip install -r requirements.txt
+*Model 1 — No Comm No Drop :*
 
-3. Run the server
-   ```sh
-   solara run MAS/server.py
+![Model 1 — No Comm No Drop](images/dist_model1_1.png)
 
-**Notes:**
+- Termination Rate (%): 61.20
 
-Adjust simulation parameters (number of robots, waste quantities, grid size, and model mode) via the provided configuration options or GUI controls.
+- Average Steps (countin only terminated runs): 85.04
+   - Max Steps: 311.00
+   - Min Steps: 32.
+   
+When I looked at this first plot, I noticed just how scattered the results are. The box stretches from about 35 up to 180 steps, and then you’ve got those extreme outliers shooting all the way to 311. In the histogram you can see most runs cluster between 50 and 80 steps, but there’s a long right tail—those few really long simulations drag up the average. And remember, nearly 40 % of runs never finished at all in our time limit. It’s a clear sign that with no communication and no drop‑timer we were leaving too much to chance: agents often got stuck holding wastes and never combined, or wandered forever hunting for partners.
 
-To run the evaluation notebook, open `MAS_evaluation.ipynb` and follow the instructions.
+*Model 1 — Comm 1 And Comm 2 :*
+
+![Model 1 — No Comm No Drop](images/dist_model1_2.png)
+
+- Termination Rate (%): 100.00
+
+- Steps (terminated runs): 53.75
+   - Max Steps: 84.00
+   - Min Steps: 34.00
+
+After adding both layers of messaging, everything tightened up instantly. Our new box barely goes beyond 75 steps, and there aren’t any crazy outliers beyond that—84 is our worst‑case now. The histogram peaks neatly around 50–60 steps with only a gentle slope on either side. Best of all, every single run finishes. This tells me that the comm₁ “who’s holding a waste?” chatter plus the comm₂ “waste dropped here—yellow robots, pick it up!” handoff removes the deadlocks and random wandering we saw before.
+
+
+**In short:**
+
+- Without any coordination, Model 1 was unpredictable, slow on average (∼85 steps) and often didn’t finish.
+
+- With both intra‑group and cross‑zone messaging, the process becomes reliable (100 % finish rate) and much faster (∼54 steps on average).
+
+
+
+### 8.2. Summary Metrics
+Next, we tabulated the core statistics—mean steps, termination rate, and (for communication runs) average message counts—so we could compare side by side.
+
+![Average steps, termination rates, avg comm₁ and avg comm₂ for each model & scenario](images/summary.png)
+
+**Key takeaways:**
+
+- Drop mechanism boosts Model 1’s termination from 61.2 % → 100 % (and Model 3’s from 16.3 % → 80.8 %), at the cost of roughly 30–150 extra steps on average.
+
+- comm_1_only slashes average steps by over 40 % (Model 1: 115.3 → 67.2; Model 3: 499.9 → 164.7) and already achieves 100 % termination across all grid sizes.
+
+- comm_1 + comm_2 delivers the greatest speed‑up—bringing Model 1 down to 53.8 steps and Model 3 to 125.8 steps—while maintaining 100 % termination with minimal extra inter‑tier messages.
+
+
+### 8.3. Scenario Comparison
+
+To visualize these differences more clearly, we plot each metric across the four scenarios for each model:
+
+<div style="display: flex; gap: 1rem; align-items: flex-start;">
+  <div style="flex: 1; text-align: center;">
+    <img src="images/average1.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+    <p><em>Average steps (only counting terminated runs)</em></p>
+  </div>
+  <div style="flex: 1; text-align: center;">
+    <img src="images/average2.png" alt="Termination rate (%) for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+    <p><em>Termination rate (%)</em></p>
+  </div>
+</div>
+
+What we observe here is that introducing the **drop mechanism** (moving from **no_comm_no_drop** → **no_comm_drop**) does not lower the average number of steps—in fact it increases slightly. However, this is entirely expected, because our *average steps* metric is computed **only on those runs that actually terminated**. In exchange for a few extra steps, the drop mechanism dramatically boosts reliability (termination rate jumps from ~61 % to 100 % in Model 1). In other words, we trade a small increase in step‐count for the guarantee that the mission will complete.
+
+
+### 8.4. Relative Improvements
+To highlight how each enhancement builds on the previous one, we computed the percent change in average steps and termination rate relative to the no_comm_no_drop baseline, and plotted those values for each model:
+
+#### Model 1 (1 × Green, 1 × Yellow, 1 × Red, 12 wastes):
+
+<div style="flex: 1; text-align: center;">
+    <img src="images/improve1.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+      </div>
+
+- Drop mech. (no_comm_drop) trades about 36 % fewer successful‐run steps for a 62 % jump in termination rate—rescuing many previously stuck simulations.
+
+- Intra‐team (comm_1_only) reclaims much of that slack by coordinating pairings, cutting average steps by another ~21 % while holding termination at 100 %.
+
+- Full pipeline (comm_1_and_comm_2) pushes step‐count down a further ~15 % (≈37 % total) with no reliability loss.
+
+#### Model 2 (1 × Green, 1 × Yellow, 1 × Red, 12 wastes):
+
+  <div style="flex: 1; text-align: center;">
+    <img src="images/improve2.png" alt="Termination rate (%) for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+  </div>
+
+
+- Here, since there’s only one robot of each color, intra‐team comm₁ has no effect — there simply aren’t “teammates” to negotiate with. You’ll see nearly flat step‐ and term‑rate curves at the comm₁_only point.
+
+- Once we add inter‑tier handoff comm₂, though, performance leaps: average steps drop by ~31 % while termination remains perfect. In this minimal three‑robot setting, reliably informing the next tier is the only coordination we need.
+
+#### Model 3 (large 24 × 16 grid, 4 of each robot, 22 wastes):
+
+  <div style="flex: 1; text-align: center;">
+    <img src="images/improve3.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+  </div>
+
+
+- Without any mechanism, only ~16 % of runs terminate—vast majority get stuck.
+
+- The drop rule alone pushes termination up to ~395 %, at the cost of a modest step‐penalty.
+
+- Introducing intra‑team comm₁ then slashes average steps by ~53 % and soars termination to over 500 % of the baseline (i.e. nearly all runs converge, and faster).
+
+- Finally, adding cross‑zone comm₂ trims another 4 % of steps and cements maximum reliability.
+
+
+### 8.5. Communication Efficiency
+
+Finally, to weigh the cost of extra messaging against the benefit of saved steps, we computed a global efficiency for **comm_1** and **comm_2** across all three models:
+
+$$
+\text{efficiency}_c \;=\; 
+\frac{\displaystyle \sum_{i=1}^{3} \bigl(\text{steps}^{\text{no\_comm\_no\_drop}}_{i} \;-\;\text{steps}^{c}_{i}\bigr)}
+{\displaystyle \sum_{i=1}^{3} \text{msgs}^{c}_{i}}
+\quad
+
+\text{for}\quad
+c \in \{\text{comm}_1,\,\text{comm}_2\}.
+$$
+
+
+The table below summarizes per‑model savings and efficiencies:
+
+<div style="flex: 1; text-align: center;">
+    <img src="images/efficiency.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
+  </div>
+
+
+- **Model 1 :**  
+  - **comm_1** yields ∼2.2 saved steps per message—highly efficient local coordination.  
+  - **comm_2** handoffs are less “bang for your buck” (∼1.1 steps/msg), since cross‑tier notifications are fewer but still guarantee full termination.
+
+- **Model 2:**  
+  - **comm_1** doesn’t apply (no intra‑team).  
+  - **comm_2** achieves nearly 5 steps saved per message—excellent payoff for the few handoff messages needed.
+
+- **Model 3 :**  
+  - **comm_1** remains very efficient (∼2.55 steps/msg) even at scale.  
+  - **comm_2** is less efficient (∼0.88 steps/msg) because many handoffs dilute its per‑message impact.
+
+- **Overall:**  
+  - **comm_1** has slightly better global efficiency (2.37 vs. 2.31 steps/msg).  
+  - For small teams without peers, rely on **comm_2** alone.  
+  - For medium-to-large teams, **comm_1** should be your primary coordination channel, with **comm_2** reserved for necessary cross‑zone handoffs.
 
 
 ## Contact
-- ZUO Yuxian – yuxian.zuo@student-cs.fr
-- NADALIN Marius – marius.nadalin@student-cs.fr
 - EL BARHICHI Mohammed – mohammed.elbarhichi@student-cs.fr
+- NADALIN Marius – marius.nadalin@student-cs.fr
+- ZUO Yuxian – yuxian.zuo@student-cs.fr
+
