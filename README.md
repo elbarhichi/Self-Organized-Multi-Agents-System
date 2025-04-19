@@ -306,15 +306,11 @@ Next, we tabulated the core statistics—mean steps, termination rate, and (for 
 
 To visualize these differences more clearly, we plot each metric across the four scenarios for each model:
 
-<div style="display: flex; gap: 1rem; align-items: flex-start;">
+
   <div style="flex: 1; text-align: center;">
-    <img src="images/average1.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
-   
+    <img src="images/average.png" alt="Average steps for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
   </div>
-  <div style="flex: 1; text-align: center;">
-    <img src="images/average2.png" alt="Termination rate (%) for each scenario, grouped by model" style="max-width: 100%; height: auto;" />
-  </div>
-</div>
+ 
 
 What we observe here is that introducing the **drop mechanism** (moving from **no_comm_no_drop** → **no_comm_drop**) does not lower the average number of steps—in fact it increases slightly. However, this is entirely expected, because our *average steps* metric is computed **only on those runs that actually terminated**. In exchange for a few extra steps, the drop mechanism dramatically boosts reliability (termination rate jumps from ~61 % to 100 % in Model 1). In other words, we trade a small increase in step‐count for the guarantee that the mission will complete.
 
