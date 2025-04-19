@@ -15,6 +15,7 @@ This project aims to simulate the self-organization of heterogeneous robot agent
    - `run.py` – A test script for manually running the simulation model, primarily used for debugging.
    - `server.py` - Handles real-time visualization and simulation monitoring.
 - `MAS_evaluation.ipynb` – Evaluates and compares the performance of different strategies.
+- `benchmarks/` - Contains different variations of evaluation results as csv files.
 
 
 ## 3. Simulation Parameters & Modes
@@ -63,9 +64,22 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 
    ![Dashboard](images/dashboard.png)
 
-   - **Simulation Steps:** A graph that dynamically displays the total number of steps taken during the simulation. This metric provides insight into the progression and speed of the simulation.
-
    - **Waste Distribution:** A graph that shows the real-time count of waste items by category (green, yellow, red). This visualization helps track how waste collection, transformation, and disposal evolve over time.
+
+   - **Total Waste Count:** A graph displaying the total number of waste objects still present in the environment (i.e., not yet destroyed). This gives a quick, high‑level view of overall cleanup progress.
+
+- **Communication Metrics Dashboard:**  
+
+   In addition to the performance dashboards, when we are using the protocol of communication, we track the communication volumes in real time via two additional graphs:
+
+   ![COMMUNICATION](images/communication.png)
+ 
+   - **Communication 1 (comm1):** A graph that shows the real time count of Intra‑team messages per step—messages exchanged between robots of the same color to coordinate locally.
+  
+   - **Communication 2 (comm2)** A graph that shows the real time count of Inter‑tier (comm2) handoff notifications per step—messages sent from one robot tier (e.g. green) to the next (e.g. yellow) when a waste item is combined and droped.
+
+   These communication graphs reveal both intra‑team coordination efforts and the inter‑tier handoff notifications that underpin the end‑to‑end waste transfer pipeline.
+
 
 These components allow us to monitor key performance indicators and evaluate the efficiency of the robot agents' behavior throughout the simulation.
 
@@ -99,7 +113,7 @@ After this initial implementation, several enhancements were introduced to impro
    Once a robot successfully combines two wastes, it immediately moves toward the boundary of its zone to drop the combined waste without delay.
 
 4. **Handling Non-Converging Instances:**  
-   To address cases where two robots of the same type each hold one waste and are unable to combine them, we implemented:
+   To address cases where two robots of the same type each hold one waste and are unable to combine them, we implemented a *drop mechanism*:
    - **Hold Timer and Drop:**  
      Robots now drop uncombined waste after a maximum holding time (e.g., 30 steps) at either the zone border or the original pickup location.
    - **Cooldown After Drop:**  
@@ -144,14 +158,26 @@ To assess the performance of our models, we run a fixed number of simulation ite
 - **Average Score (steps):** The average number of steps needed to finish the mission (computed only for converged cases).
 - **Termination Rate (%):** The percentage of simulation runs that successfully terminated within a predefined maximum number of steps. Each simulation is run for a maximum of `max_steps` steps, beyond which it is considered non-convergent.
 
+Additionally, for the simulations that uses communication protocol, we record two further metrics:
+
+- **Comm 1 Messages Sent:** The average number of intra‑team (COM1) messages dispatched per run—that is, messages exchanged between robots of the same color to coordinate local waste collection.  
+- **Comm 2 Messages Sent:** The average number of inter‑tier (COM2) handoff notifications dispatched per run—i.e., messages sent from one robot tier (green → yellow or yellow → red) when transferring combined waste across zones.  
+
+
+
+
+
+
+
+
 ### Evaluation Parameters
 The following table summarizes the parameters used across all evaluations:
 
-| Case      | Grid Size | Robot Composition         | Waste Composition         | N (simulations) | max_steps |
+| Model      | Grid Size | Robot Composition         | Waste Composition         | N (simulations) | max_steps |
 |-----------|-----------|---------------------------|---------------------------|-----------------|-----------|
-| **Case 1** | 12×8      | 6 Robots (G:2, Y:2, R:2)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
-| **Case 2** | 12×8      | 3 Robots (G:1, Y:1, R:1)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
-| **Case 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 24 Wastes (G:10, Y:9, R:5) | 100           | 1000 |
+| **Model 1** | 12×8      | 6 Robots (G:2, Y:2, R:2)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
+| **Model 2** | 12×8      | 3 Robots (G:1, Y:1, R:1)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
+| **Model 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 24 Wastes (G:10, Y:9, R:5) | 100           | 1000 |
 
 ---
 
@@ -160,9 +186,9 @@ The following table summarizes the parameters used across all evaluations:
 #### Initial Evaluation (Before Handling Divergent Cases)
 | Model Configuration | Average Score (steps) | Termination Rate (%) |
 |---------------------|-----------------------|----------------------|
-| **Case 1**        | 59.03                  | 36.00%                |
-| **Case 2**        | 101.15                | 100.00               |
-| **Case 3**        | 153.00                | 6.00%                 |
+| **Model 1**        | 59.03                  | 36.00%                |
+| **Model 2**        | 101.15                | 100.00               |
+| **Model 3**        | 153.00                | 6.00%                 |
 
 
 *Note: Divergent cases occurred when matching wastes were held by different robots, preventing mission termination.*
@@ -170,9 +196,9 @@ The following table summarizes the parameters used across all evaluations:
 #### Updated Evaluation (After Implementing Drop Mechanism)
 | Model Configuration   | Average Score (steps) | Termination Rate (%) |
 |--------|-----------------------|----------------------|
-| **Case 1**  | 103.02                 | 95.00%               |
-| **Case 2**  | 95.27                 | 100.00               |
-| **Case 3**  | 393.65                | 88.00%               |
+| **Model 1**  | 103.02                 | 95.00%               |
+| **Model 2**  | 95.27                 | 100.00               |
+| **Model 3**  | 393.65                | 88.00%               |
 
 The introduction of the drop mechanism significantly improved the termination rate by addressing various non-convergent cases.
 
