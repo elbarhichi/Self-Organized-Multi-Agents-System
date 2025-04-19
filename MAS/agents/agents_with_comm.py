@@ -302,7 +302,7 @@ class YellowRobotWithComm(YellowRobot, CommunicatingRobot):
             if last_action == "drop":
                 waste_type = last_action_desc[0]
                 if waste_type == "red":
-                    # Communicate red waste pos to all YellowRobot agents
+                    # Communicate red waste pos to all RedRobot agents
                     self.knowledge['msgs_to_broadcast'].append((MessagePerformative.INFORM_REF, "red", self.pos))
                     
             elif last_action == "pick_up":
