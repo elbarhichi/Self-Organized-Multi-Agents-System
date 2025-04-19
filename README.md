@@ -12,12 +12,32 @@ This project aims to simulate the self-organization of heterogeneous robot agent
    - `model.py` - Defines the RobotMission model, including environment setup, agent behavior, and waste management.
    - `objects.py` - Defines static elements, including waste items, radioactive zones, and disposal sites.
    - `actions.py` - Manages robot actions, including movement, waste pickup, combination, and disposal.
-   - `run.py` – A test script for manually running the simulation model, primarily used for debugging.
+   - `test.py` – A test script for manually running the simulation model, primarily used for debugging.
    - `server.py` - Handles real-time visualization and simulation monitoring.
 - `MAS_evaluation.ipynb` – Evaluates and compares the performance of different strategies.
 
 
-## 3. Simulation Parameters & Modes
+## 3. Running the simulations
+
+1. Clone the repository  
+   ```sh
+   git clone https://gitlab-student.centralesupelec.fr/marius.nadalin/mas_self_org_robots_in_host_env.git
+   cd mas_self_org_robots_in_host_env
+
+2. Install dependencies  
+   ```sh
+   pip install -r requirements.txt
+
+3. Run the server
+   ```sh
+   solara run MAS/server.py
+
+**Notes:**
+- Adjust simulation parameters (number of robots, waste quantities, grid size, and model mode) via the provided configuration options or GUI controls.
+- To run the evaluation notebook, open `MAS_evaluation.ipynb` and follow the instructions.
+
+
+## 4. Simulation Parameters & Modes
 The simulation models an environment divided into three zones—low, medium, and high radioactivity—where robots:
 
 - Collect and combine waste items (green, yellow, red)
@@ -43,7 +63,7 @@ The system is designed to be modular and highly configurable. Users can adjust a
 These parameters can be easily modified using the controls (sliders and dropdown menus) in the simulation’s interface (see the [Visualization](Visualization) section).
 
 
-## 4. Visualization
+## 5. Visualization
 Our simulation provides a real-time visual interface to observe the behavior of the agents and the results of the simulation. We visualize two key components : 
 
 - **Grid Visualization:** 
@@ -70,9 +90,9 @@ Our simulation provides a real-time visual interface to observe the behavior of 
 These components allow us to monitor key performance indicators and evaluate the efficiency of the robot agents' behavior throughout the simulation.
 
 
-## 5. Robot Behavior Strategies
+## 6. Robot Behavior Strategies
 
-### 5.1 Agent Inheritance Structure
+### 6.1 Agent Inheritance Structure
 ---
 
 The diagram below shows the class inheritance structure of the robot agents.
@@ -80,7 +100,7 @@ The diagram below shows the class inheritance structure of the robot agents.
 ![Agent Inheritance Diagram](images/SMA_self_org_robots-ULM_with_comm.drawio.svg)
 
 
-### 5.2 No-Communication Strategy
+### 6.2 No-Communication Strategy
 ---
 
 In this phase, the agents operate independently based on their local perceptions without inter-agent communication.
@@ -108,7 +128,7 @@ After this initial implementation, several enhancements were introduced to impro
 With these improvements, our simulation metrics showed significant enhancement, achieving a 100% termination rate even without communication between agents when running the simulations for infinite number of steps.
 
 
-### 5.3 Cooperative Strategy with Communication
+### 6.3 Cooperative Strategy with Communication
 ---
 
 In this phase, communication between agents is key to optimizing the waste collection and combination process. Each robot can send and receive messages to/from other agents, enabling dynamic cooperation. For example, a typical Green-Green interaction is shown in the figure below.
@@ -137,12 +157,17 @@ There are mainly three stages:
 This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
 
 
-## 6. Model Evaluation & Results
+## 7. Model Evaluation & Results
 
 ### Evaluation Protocol
 To assess the performance of our models, we run a fixed number of simulation iterations (`N`) for each configuration. For every configuration, we measure two key metrics:
 - **Average Score (steps):** The average number of steps needed to finish the mission (computed only for converged cases).
 - **Termination Rate (%):** The percentage of simulation runs that successfully terminated within a predefined maximum number of steps. Each simulation is run for a maximum of `max_steps` steps, beyond which it is considered non-convergent.
+
+To evaluate the communication-based strategy, we also used the **number of messages exchanged** as a performance metric. Communication messages were categorized into two types:
+- `comm_1:` Messages exchanged between robots of the same type for negotiation and coordination in sharing a single waste item.
+- `comm_2:` Messages used to inform the next level of robots about the position of a newly combined waste item.
+
 
 ### Evaluation Parameters
 The following table summarizes the parameters used across all evaluations:
@@ -155,7 +180,7 @@ The following table summarizes the parameters used across all evaluations:
 
 ---
 
-### 6.1. No Communication Strategy
+### 7.1. No Communication Strategy
 
 #### Initial Evaluation (Before Handling Divergent Cases)
 | Model Configuration | Average Score (steps) | Termination Rate (%) |
@@ -180,30 +205,8 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 
 
-### 6.2. Cooperative Strategy with Communication
+### 7.2. Cooperative Strategy with Communication
 *Results for the Cooperative Strategy with Communication will be included here once the experiments are completed. Preliminary observations indicate improvements in task coordination, and detailed metrics will be added in subsequent updates.*
-
-
-## 7. Running the simulations
-
-1. Clone the repository  
-   ```sh
-   git clone https://gitlab-student.centralesupelec.fr/marius.nadalin/mas_self_org_robots_in_host_env.git
-   cd mas_self_org_robots_in_host_env
-
-2. Install dependencies  
-   ```sh
-   pip install -r requirements.txt
-
-3. Run the server
-   ```sh
-   solara run MAS/server.py
-
-**Notes:**
-
-Adjust simulation parameters (number of robots, waste quantities, grid size, and model mode) via the provided configuration options or GUI controls.
-
-To run the evaluation notebook, open `MAS_evaluation.ipynb` and follow the instructions.
 
 
 ## Contact
