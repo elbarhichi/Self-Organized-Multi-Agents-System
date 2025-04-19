@@ -174,7 +174,15 @@ NbTotalWastesPlot = make_plot_component(
     {"Nb_total_wastes": "black"},  
     post_process=plot_post_process
 )
+NbMsgComm1Plot = make_plot_component(
+    {"Nb_sent_msgs_comm_1": "tab:cyan"},
+    post_process=plot_post_process,
+)
 
+NbMsgComm2Plot = make_plot_component(
+    {"Nb_sent_msgs_comm_2": "tab:purple"},
+    post_process=plot_post_process,
+)
 
 @solara.component
 def MyLayout(model):
@@ -186,18 +194,28 @@ def MyLayout(model):
         NbTotalWastesPlot(model),
         NbWastesPlot(model)
     ])
+    if model.robot_type == "With communication":
+        bottom_row2 = solara.Row([
+            NbMsgComm1Plot(model),
+            NbMsgComm2Plot(model)
+        ])
+    else:
+        bottom_row2 = solara.Row([])           #
     return solara.Column([
         top_row,
-        bottom_row
+        bottom_row,
+        bottom_row2
     ])
 
-page = SolaraViz(
-    model1,
-    components=[MyLayout],
-    model_params=model_params,
-    name="Robot Waste Cleanup Simulation",
-)
+@solara.component
+def App():
+    return SolaraViz(
+        model1,
+        components=[MyLayout],
+        model_params=model_params,
+        name="Robot Waste Cleanup Simulation",
+    )
 
-page
+page = App
 
 # to start : "solara run MAS/server.py"

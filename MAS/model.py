@@ -98,9 +98,9 @@ class RobotMission(mesa.Model):
                                                                  "Nb_yellow_wastes": self.get_nb_yellow_wastes,
                                                                  "Nb_red_wastes": self.get_nb_red_wastess,
                                                                  "Nb_total_wastes": self.get_nb_total_wastes,
-                                                                 "Total_nb_msgs_sent": self.get_nb_sent_msgs,
-                                                                 "Total_nb_msgs_sent_comm_1": self.get_nb_sent_msgs_comm_1,
-                                                                 "Total_nb_msgs_sent_comm_2": self.get_nb_sent_msgs_comm_2})
+                                                                 "Nb_sent_msgs_comm_1"    : self.get_nb_sent_msgs_comm_1,
+                                                                 "Nb_sent_msgs_comm_2"    : self.get_nb_sent_msgs_comm_2,
+                                                                 "Nb_sent_msgs_total"     : self.get_nb_sent_msgs,})
         
         self.is_cleaned = False
         self.robot_agents = [] # list of RobotAgents that interact in the RobotMission
