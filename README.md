@@ -365,7 +365,7 @@ To highlight how each enhancement builds on the previous one, we computed the pe
 
 Finally, to weigh the cost of extra messaging against the benefit of saved steps, we computed a global efficiency for **comm_1** and **comm_2** across all three models:
 
-\[
+```math
 \text{efficiency}_c \;=\; 
 \frac{\displaystyle \sum_{i=1}^{3} \bigl(\text{steps}^{\text{no\_comm\_no\_drop}}_{i} \;-\;\text{steps}^{c}_{i}\bigr)}
 {\displaystyle \sum_{i=1}^{3} \text{msgs}^{c}_{i}}
@@ -373,7 +373,7 @@ Finally, to weigh the cost of extra messaging against the benefit of saved steps
 
 \text{for}\quad
 c \in \{\text{comm}_1,\,\text{comm}_2\}.
-\]
+```
 
 
 The table below summarizes per‑model savings and efficiencies:
