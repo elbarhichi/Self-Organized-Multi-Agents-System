@@ -8,6 +8,7 @@
 import mesa
 from actions import sim_move, is_pos_in_bounds
 from objects import WasteAgent
+import random # for the battery part
 
 class RobotAgent(mesa.Agent):
     def __init__(self, model:mesa.Model, *args, **kwargs) -> None:
@@ -17,6 +18,8 @@ class RobotAgent(mesa.Agent):
             model: A RobotMission instance
         """
         super().__init__(model, *args, **kwargs)
+        self.battery = random.randint(self.model.battery_min, self.model.battery_max)
+        self.max_battery = self.battery
         self.collected_wastes = []
         self.rad_resistance = 0
         self.target_waste_type = None
@@ -80,6 +83,9 @@ class RobotAgent(mesa.Agent):
         action, *action_desc = self.deliberate()
         # Keep track of actions taken
         self.knowledge["last_action"] = (action, *action_desc)
+
+        #decrement battery
+        self.battery = max(0, self.battery - 1)
         return action, *action_desc
 
     def get_nb_target_waste_held(self) -> int:

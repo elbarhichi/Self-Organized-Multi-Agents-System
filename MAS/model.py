@@ -33,7 +33,13 @@ ROBOT_TYPE_TO_CLASSES = {
         "green": GreenRobotWithComm,
         "yellow": YellowRobotWithComm,
         "red": RedRobotWithComm
+    },
+    "With Battery": {
+        "green": GreenRobotWithComm,
+        "yellow": YellowRobotWithComm,
+        "red": RedRobotWithComm
     }
+
 }
 
 def get_nb_wastes(model):
@@ -58,6 +64,8 @@ class RobotMission(mesa.Model):
                  nb_green_wastes:int = 6,
                  nb_yellow_wastes:int = 1,
                  nb_red_wastes:int = 1,
+                 battery_min:int=1000, 
+                 battery_max:int=1000,
                  width:int = 10,
                  height:int = 10,
                  seed:int = None
@@ -80,6 +88,8 @@ class RobotMission(mesa.Model):
         self.nb_red_wastes = nb_red_wastes
         self.width = width
         self.height = height
+        self.battery_min = battery_min
+        self.battery_max = battery_max
         self.zone_bounds = {
             'green' : [(0, width // 3 - 1), (0, height - 1)],
             'yellow' : [(width // 3, 2 * width // 3 - 1), (0, height - 1)],
@@ -344,7 +354,6 @@ class RobotMission(mesa.Model):
             if new_pos[0] < 0 or new_pos[0] >= self.width or new_pos[1] < 0 or new_pos[1] >= self.height:
                 return False
             ## IF FEASIBLE, PERFORM THE ACTION 
-            # TODO : destroy agent if agent in wrong zone
             act.ACTIONS["move"](self, agent, direction)
             return True
                 

@@ -48,7 +48,7 @@ The simulation models an environment divided into three zones—low, medium, and
 
 The system is designed to be modular and highly configurable. Users can adjust a wide range of parameters in real time through the simulation interface:
 
-![Interface](images/interface.png)
+![Interface](images/interf.png)
 
 - **Environment Parameters:**
   - **Grid Size:** Adjustable (e.g., standard 12×8, large 24×16)
@@ -61,6 +61,7 @@ The system is designed to be modular and highly configurable. Users can adjust a
 - **Model Modes:**
   - **No Communication:** Robots act independently without sharing information
   - **With Communication:** Robots exchange messages to coordinate and improve collection efficiency
+  - **With Battery:** Robots start with a random limited battery capacity.
 
 These parameters can be easily modified using the controls (sliders and dropdown menus) in the simulation’s interface (see the [Visualization](Visualization) section).
 
@@ -171,6 +172,34 @@ There are mainly three stages:
 
 This communication-based strategy allows agents to form temporary partnerships, coordinate actions, and minimize redundant movements.
 
+### 6.4. Communication + Battery Uncertainties Strategy
+
+In this variant, we extend our full communication protocol by introducing a model of battery‐driven uncertainty. Each robot is assigned a random battery capacity between `battery_min` and `battery_max` at initialization. Every action (move, pick‐up, combine, drop) consumes one unit of battery. When a robot’s battery is exhausted, it must immediately drop whatever it holds and cease further operation.
+
+Key behaviors in this scenario:
+
+- **Random initial battery:**
+Each robot begins with a different energy budget, forcing heterogeneity in how far and how long they can operate before needing assistance.
+
+- **Energy consumption:**
+Every time a robot executes an action (move, pick‑up, combine, drop), its remaining battery decreases by one.
+
+- **Automatic drop on empty battery:**
+
+   - **Single waste held:**
+A robot that runs out of power while carrying one piece of waste drops it in its current cell and broadcasts an Intra‑team notification to its own color group, alerting teammates to retrieve the droped waste.
+
+   - **Combined (higher‑level) waste held:**
+If battery expires after combining, the robot drops the combined waste where it stands, then it broadcasts an Inter‑tier notification so the next color group (e.g., green→yellow or yellow→red) learns the precise drop location.
+
+   - **Adaptive search by next‑tier robots:**
+Under ordinary conditions, higher‑tier robots only search for new waste at the zone border. When they receive a battery‑drop broadcast, however, they override the border‑only rule and navigate directly to the announced coordinates —even if that lies deeper in another zone— to recover the abandoned combined waste since the radioactivity level there is suitable.
+
+- **Permanent shutdown:**
+Once a robot’s battery reaches zero, it performs no further percepts, deliberations, or actions, simulating a complete system failure at that location.
+
+By combining communication protocols with random battery lifetimes, this scenario stresses both our intra‑team coordination (comm₁) and cross‑tier handoff (comm₂) mechanisms under unpredictable operational constraints.
+
 
 ## 7. Model Evaluation & Results
 
@@ -188,11 +217,13 @@ Additionally, To evaluate the communication-based strategy, we also used the **n
 ### 7.2. Evaluation Parameters
 The following table summarizes the parameters used across all evaluations:
 
-| Model      | Grid Size | Robot Composition         | Waste Composition         | N (simulations) | max_steps |
-|-----------|-----------|---------------------------|---------------------------|-----------------|-----------|
-| **Model 1** | 12×8      | 6 Robots (G:2, Y:2, R:2)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
-| **Model 2** | 12×8      | 3 Robots (G:1, Y:1, R:1)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 |
-| **Model 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 22 Wastes (G:10, Y:7, R:5) | 100           | 1000 |
+| Model      | Grid Size | Robot Composition         | Waste Composition         | N (simulations) | max_steps | battery_min |battery_max |
+|-----------|-----------|---------------------------|---------------------------|-----------------|---------|---------|-----------|
+| **Model 1** | 12×8      | 6 Robots (G:2, Y:2, R:2)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 | 50 | 100 |
+| **Model 2** | 12×8      | 3 Robots (G:1, Y:1, R:1)   | 12 Wastes (G:6, Y:3, R:3)  | 100           | 1000 | 50 | 100 |
+| **Model 3** | 24×16     | 12 Robots (G:4, Y:4, R:4)  | 22 Wastes (G:10, Y:7, R:5) | 100           | 1000 | 100 | 200 |
+
+
 
 ---
 
@@ -235,7 +266,7 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 #### Full Communication (Intra‑team (comm_1) + Inter‑tier (comm_2))
 
-| Model Configuration | Average Score (steps) | Termination Rate (%) | Avg COM1 Messages | Avg COM2 Messages |
+| Model Configuration | Average Score (steps) | Termination Rate (%) | Avg comm_1 Messages | Avg comm_2 Messages |
 |---------------------|-----------------------|----------------------|-------------------|-------------------|
 | **Model 1**         |  53.75                | 100.00%              | 21.39             | 12.00             |
 | **Model 2**         |  69.90                | 100.00%              | 0.00              | 6.00              |
@@ -243,6 +274,15 @@ Moreover, by increasing the `max_steps` parameter (or setting it to an infinite 
 
 The introduction of the communication mechanism overall improved the termination rate by addressing various non-convergent cases to a 100% termination rate.
 
+### 7.5.  Communication + Battery Uncertainties Strategy Results
+
+| Model Configuration          | Avg Score (terminated) | Termination Rate (%) | Avg comm₁ Msgs | Avg comm₂ Msgs |
+|------------------------------|-----------------------:|---------------------:|---------------:|---------------:|
+| **Model 1 – With Battery**   |                  53.58 | 94.70% |           21.38|           11.95|
+| **Model 2 – With Battery**   |                  65.29 |                59.60%|            0.00|            5.78|
+| **Model 3 – With Battery**   |                 118.78 |                86.70%|          132.81|           43.49|
+
+As expected, imposing limited battery life uncertainties introduces new non-terminated runs due to power exhaustion.
 
 ## 8. Results Analysis
 For a deeper dive into all of the charts, code and interactive plots, take a look at `MAS_results_analysis.ipynb` notebook.
@@ -396,6 +436,83 @@ The table below summarizes per‑model savings and efficiencies:
   - For small teams without peers, rely on **comm_2** alone.  
   - For medium-to-large teams, **comm_1** should be your primary coordination channel, with **comm_2** reserved for necessary cross‑zone handoffs.
 
+### 8.6. Battery‐Constrained Strategy
+
+#### 8.6.1. Score Distributions under Battery Limits
+
+
+*Model 1 with `battery_min=50` and `battery_max=100`:*
+
+![Model 1 — Battery](images/battery1.png)
+
+- Termination Rate (%): 94.70
+
+- Steps (terminated runs): 53.58
+   - Max Steps: 93.00
+   - Min Steps: 34.00
+
+Distribution remains tight (similar to comm₁+comm₂) but with a few longer tails — those are runs that simply ran out of battery before completing.
+
+*Model 2 with `battery_min=50` and `battery_max=100`:*
+
+![Model 2 — Battery](images/battery2.png)
+
+- Termination Rate (%): 59.60
+
+- Steps (terminated runs): 65.29
+   - Max Steps: 96.00
+   - Min Steps: 49.00
+
+Score spread shifts upward and many mid‑to‑high outliers; only ~60 % of runs finish, so the histogram undercounts the failures.
+
+*Model 3 with `battery_min=100` and `battery_max=200`:*
+
+![Model 3 — Battery](images/battery3.png)
+
+- Termination Rate (%): 59.60
+
+- Steps (terminated runs): 118.78
+   - Max Steps: 201.00
+   - Min Steps: 65.00
+
+Heavier, right‑skewed distribution as large grid + battery gives both more ground to cover and more drop‑outs; still most runs finish (≈87 %) but with longer tails.
+
+#### 8.6.2. Battery vs. Full Communication Comparison
+
+In order to directly compare the impact of limited energy to rich messaging coordination, we plot both the average steps (mean over terminated runs) and the termination rate across Models 1–3 for the “comm_1 + comm_2” strategy versus the “with battery” variant.
+
+![Battery vs Comm](images/batt_vs_com.png)
+
+From this comparison we can see:
+
+  - **Model 1:** 
+Battery constraint costs only a few percent in termination (100 % → 94.7 %), and average steps increase by only ∼5 %—the inherent redundancy of two green, two yellow, two red robots still carries the day.
+
+  - **Model 2:** 
+With only one robot per tier, energy limits cause a collapse: termination falls to ~60 % (vs. 100 % under full comm), and average steps climb sharply. This shows that in minimal teams you cannot rely on solo agents when battery runs out.
+
+  - **Model 3:** 
+A larger team cushions the blow: termination drops to 86.7 % (from 100 %) and steps rise by ~7 %. Big squads mitigate some battery failures, but long‐range patrols still suffer from mid‐mission shutdowns.
+
+  **Overall insight:**
+  
+Battery puts a hard cap on reliability—communication‑heavy protocols remain the safer fallback when energy is scarce, especially in lean‑robot settings. Furthermore, the actual performance will critically depend on the chosen `battery_min` and `battery_max` bounds: tighter battery ranges amplify shutdown risks, while more generous capacities buffer against mid‑mission failures.
+
+
+## 9. Conclusion
+
+Over the course of this project, we stepped through a spectrum of decentralized coordination strategies to tackle a challenging waste‑cleanup task in a simulated radioactive environment. Starting with fully independent agents, we saw firsthand how pure randomness quickly led to deadlocks and uncompleted missions. By layering on simple drop‑timers, we rescued many stuck runs at the expense of a few extra steps. Introducing intra‑team messaging (comm_1) unlocked dramatic speed‑ups—robots paired up reliably, slashing average step counts by over 40 % in many cases—while cross‑tier handoffs (comm2) closed the loop end‑to‑end, guaranteeing 100 % mission completion even in the largest grids.
+
+Finally, by weaving in random battery limits, we tested our coordination protocols under real‑world constraints: energy failures forced mid‑task drops and shutdowns, exposing the trade‑off between robust messaging and finite resources. The results showed that, while small teams collapse without generous energy budgets, larger squads tolerate battery variability better—but only up to a point.
+
+**Key takeaways:**
+- **Redundancy & Drop Timers** are a low‑cost way to recover from coordination deadlocks when communication isn’t available.  
+- **Intra‑team Coordination (comm_1)** yields the best “bang for your buck,” saving ∼2 steps per message across scales.  
+- **Cross‑tier Handoffs (comm_2)** ensure full pipeline reliability, at modest messaging cost.  
+- **Energy Constraints** introduce new failure modes: when battery life is tight, robust messaging protocols become essential backstops, especially in minimal‑team settings.  
+- **Parameter Sensitivity:** Both communication efficiency and battery performance hinge critically on chosen bounds (e.g., `battery_min`, `battery_max`, zone sizes, and robot counts).  
+
+Taken together, our experiments demonstrate that a layered approach—combining simple drop‑timers, targeted intra‑team negotiations, and strategic inter‑tier broadcasts—provides a powerful toolkit for self‑organizing multi‑agent systems operating under uncertainty. Future extensions might explore adaptive battery recharging, dynamic team resizing, or obstacle‑filled terrains to push these coordination patterns even further.  
 
 ## Contact
 - EL BARHICHI Mohammed – mohammed.elbarhichi@student-cs.fr

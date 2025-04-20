@@ -84,6 +84,8 @@ model1 = RobotMission(robot_type="No communication",
                       nb_yellow_robots=2,
                       nb_red_robots=2,
                       nb_green_wastes=6,
+                      battery_min=200, 
+                      battery_max=200,
                       nb_yellow_wastes=3,
                       nb_red_wastes=3,
                       width=12,
@@ -110,12 +112,12 @@ model_params = {
         "type": "Select",
         "value": model1.robot_type,
         "label": "Robot type:",
-        "values": ["No communication", "With communication"],
+        "values": ["No communication", "With communication", "With Battery"],
     },
     "nb_green_robots": {
         "type": "SliderInt",
         "value": model1.nb_green_robots,
-        "label": "Number of greeen robots:",
+        "label": "Number of green robots:",
         "min": 0,
         "max": 10,
         "step": 1,
@@ -160,6 +162,22 @@ model_params = {
         "max": 10,
         "step": 1,
     },
+    "battery_min": {
+        "type": "SliderInt",
+        "value": model1.battery_min,
+        "label": "Min battery:",
+        "min": 10,
+        "max": 200,
+        "step": 10,
+    },
+    "battery_max": {
+        "type": "SliderInt",
+        "value": model1.battery_max,
+        "label": "Max battery:",
+        "min": 10,
+        "max": 200,
+        "step": 10,
+    },
 }
 
 def plot_post_process(ax):
@@ -194,13 +212,13 @@ def MyLayout(model):
         NbTotalWastesPlot(model),
         NbWastesPlot(model)
     ])
-    if model.robot_type == "With communication":
+    if model.robot_type == "With communication" or model.robot_type == "With Battery":
         bottom_row2 = solara.Row([
             NbMsgComm1Plot(model),
             NbMsgComm2Plot(model)
         ])
     else:
-        bottom_row2 = solara.Row([])           #
+        bottom_row2 = solara.Row([])          
     return solara.Column([
         top_row,
         bottom_row,

@@ -19,6 +19,37 @@ from collections import deque
 MAX_RESPONSE_DELAY = 6      # Maximum delay to wait for a response from the other robot
 INFORM_PICK_UP_PERIOD = 8   # Period between 2 pick up messages (repetition of the same message)
 
+def _battery_dead_behavior(agent):
+    """
+    If agent.battery has hit zero, force it to:
+      1) finish delivering any *combined* waste to its zone‐border
+      2) else drop whatever single waste it's still carrying
+      3) else do nothing
+    Returns an (action, *args) tuple, or None if battery > 0.
+    """
+    if agent.battery > 0:
+        return None
+
+    held = agent.knowledge["collected_wastes"]
+    
+    combined = [w for w in held if w != agent.target_waste_type]
+    if combined:
+        drop_type = combined[0]
+        border_x = {
+            "green":  agent.knowledge["grid_width"]//3 - 1,
+            "yellow": 2*(agent.knowledge["grid_width"]//3) - 1,
+            "red":    agent.knowledge["grid_width"] - 1
+        }[agent.target_waste_type]
+        if agent.pos[0] == border_x:
+            return ("drop", drop_type)
+        else:
+            return ("move", "E")
+
+    if held:
+        return ("drop", held[0])
+
+    return ("move", None)
+
 class CommunicatingRobot(CommunicatingAgent):
     """A robot that is able to send and receive Messages"""
     
@@ -121,6 +152,11 @@ class GreenRobotWithComm(GreenRobot, CommunicatingRobot):
 
     def deliberate(self) -> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
+
+        dead = _battery_dead_behavior(self)
+        if dead is not None:
+            return dead
+
         # Random move in green zone
         perceptions = self.knowledge["perceptions"]
         current_pos = self.knowledge["current_pos"]
@@ -314,6 +350,11 @@ class YellowRobotWithComm(YellowRobot, CommunicatingRobot):
         
     def deliberate(self)-> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
+
+        dead = _battery_dead_behavior(self)
+        if dead is not None:
+            return dead
+        
         # Random move in green or yellow zone
         perceptions = self.knowledge["perceptions"]
         current_pos = self.knowledge["current_pos"]
@@ -515,6 +556,11 @@ class RedRobotWithComm(RedRobot, CommunicatingRobot):
         
     def deliberate(self) -> tuple[str, str | int | None]:
         # Based on the current knowledge, choose an action to perform
+
+        dead = _battery_dead_behavior(self)
+        if dead is not None:
+            return dead
+        
         # Random move in green, yellow or red zone
         perceptions = self.knowledge["perceptions"]
         current_pos = self.knowledge["current_pos"]
